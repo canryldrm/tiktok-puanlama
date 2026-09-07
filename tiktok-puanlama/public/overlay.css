@@ -1,0 +1,157 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: transparent !important; overflow: hidden; font-family: 'Poppins', sans-serif; }
+html { background: transparent !important; }
+
+#overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100vw; height: 100vh;
+    pointer-events: none;
+}
+
+
+/* MERKEZ (BÜYÜK PUAN) */
+#center-content {
+    position: absolute;
+    top: 45%; left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+#score-display {
+    font-family: 'Russo One', sans-serif;
+    font-size: 200px;
+    text-align: center;
+    color: white;
+    transition: color 0.5s, text-shadow 0.5s;
+    text-shadow: 0 0 50px rgba(255,255,255,0.6);
+    line-height: 1;
+}
+#score-display.pulse {
+    animation: pulse 0.6s ease-out;
+}
+
+#current-person {
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 10px 30px;
+    text-align: center;
+    color: #00d4ff;
+    font-family: 'Russo One', sans-serif;
+    font-size: 32px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    box-shadow: 0 0 20px rgba(0,212,255,0.3);
+}
+
+#voting-status {
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 12px 24px;
+    text-align: center;
+    color: white;
+    font-size: 18px;
+    border: 1px solid rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-weight: 600;
+}
+.status-dot { width: 14px; height: 14px; border-radius: 50%; background: #ff4444; }
+.status-dot.active { background: #00ff88; box-shadow: 0 0 12px #00ff88; }
+
+#countdown-container {
+    background: rgba(0,0,0,0.5);
+    border-radius: 10px;
+    height: 12px;
+    width: 350px;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+#countdown {
+    height: 100%;
+    background: linear-gradient(90deg, #00d4ff, #00ff88);
+    width: 100%;
+    transition: width 1s linear;
+    box-shadow: 0 0 15px rgba(0,212,255,0.8);
+}
+
+/* RACONLAR (KÖŞELERDE) */
+
+/* ALT: KAYAN YAZI (MARQUEE) */
+#votes-list {
+    position: absolute;
+    bottom: 50px;
+    left: 0;
+    width: 100vw;
+    height: 110px;
+    overflow: hidden;
+}
+
+.vote-item {
+    position: absolute;
+    right: -400px; /* Ekranın sağından başlar */
+    bottom: 10px;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 60px;
+    padding: 10px 30px 10px 10px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    animation: scrollLeftMarquee 12s linear forwards;
+    white-space: nowrap;
+}
+
+.vote-avatar {
+    width: 75px; height: 75px;
+    border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.4);
+    object-fit: cover;
+    background: linear-gradient(45deg, #333, #666);
+}
+.vote-username { color: white; font-size: 28px; font-weight: 600; text-shadow: 2px 2px 4px #000; }
+.vote-score {
+    border-radius: 50%;
+    width: 65px; height: 65px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 32px;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    font-family: 'Russo One', sans-serif;
+}
+
+.racon-score {
+    background: #FFD700; color: #000; border-radius: 8px; padding: 4px 12px;
+    font-weight: bold; font-size: 20px;
+}
+.racon-coins { color: #00d4ff; font-size: 16px; font-weight: 700; margin-right: 10px; }
+
+.hidden { display: none !important; }
+
+/* ANİMASYONLAR */
+@keyframes slideInLeft {
+    from { transform: translateX(-100px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+@keyframes scrollLeftMarquee {
+    0% { right: -400px; }
+    100% { right: 100vw; }
+}
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+@keyframes crownBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}

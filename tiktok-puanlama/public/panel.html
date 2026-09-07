@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TikTok Puanlama - Kontrol Paneli</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="panel.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎬 TikTok Puanlama Sistemi</h1>
+      <p>Kontrol Paneli</p>
+    </header>
+
+    <!-- OBS OVERLAY LINK -->
+    <section class="card obs-card">
+      <h2>🖥 OBS Overlay</h2>
+      <p>Bu URL'leri OBS'de "Tarayıcı (Browser Source)" kaynağı olarak ekleyin. Arka planları otomatik şeffaftır.</p>
+      
+      <div class="copy-group">
+        <input type="text" id="overlay-url" readonly value="Yükleniyor...">
+        <button onclick="copyOverlayUrl()" class="btn btn-secondary">📋 Ana Overlay Kopyala</button>
+      </div>
+
+      <div class="copy-group">
+        <input type="text" id="racon-overlay-url" readonly value="Yükleniyor...">
+        <button onclick="copyRaconOverlayUrl()" class="btn btn-secondary">🎩 Racon Overlay Kopyala</button>
+      </div>
+      
+      <div class="obs-tips">
+        <small>💡 Önerilen çözünürlük: <strong>1920 × 1080</strong></small>
+      </div>
+    </section>
+
+    <!-- TIKTOK CONNECTION -->
+    <section class="card">
+      <h2>📡 TikTok Bağlantısı</h2>
+      <div class="status-bar">
+        <span id="connection-dot" class="status-dot disconnected"></span>
+        <span id="connection-text">Bağlı Değil</span>
+      </div>
+      <div class="input-group">
+        <input type="text" id="tiktok-username" placeholder="@kullaniciadi">
+        <button id="btn-connect" class="btn btn-primary" onclick="connectTikTok()">Bağlan</button>
+        <button id="btn-disconnect" class="btn btn-danger" onclick="disconnectTikTok()" disabled>Kopar</button>
+      </div>
+      <small class="help-text">Canlı yayın yapan hesabın kullanıcı adını girin. Yayın aktif olmalıdır.</small>
+    </section>
+
+    <!-- RACON GIFT SETTING -->
+    <section class="card">
+      <h2>🎩 Racon Hediye Ayarı</h2>
+      <div class="input-group">
+        <input type="text" id="racon-gift-name" value="Şapka & Bıyık" placeholder="Hediye Adı">
+        <button class="btn btn-gold" onclick="saveRaconGift()">Kaydet</button>
+      </div>
+      <small class="help-text">TikTok hediye adını girin. Bu hediyeyi gönderenler otomatik 10 puan alır (ortalamaya dahil değil).</small>
+    </section>
+
+    <!-- VOTING CONTROL -->
+    <section class="card">
+      <h2>⏱ Oylama Kontrolü</h2>
+      <div class="button-group">
+        <button id="btn-start-voting" class="btn btn-primary btn-large" onclick="startVoting()">▶ Oylamayı Başlat</button>
+        <button id="btn-stop-voting" class="btn btn-danger btn-large" onclick="stopVoting()" disabled>⏹ Oylamayı Durdur</button>
+      </div>
+    </section>
+
+    <!-- LIVE STATS -->
+    <section class="card">
+      <h2>📊 Canlı İstatistikler</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Toplam Oy</div>
+          <div id="stat-total-votes" class="stat-value">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Ortalama Puan</div>
+          <div id="stat-avg-score" class="stat-value">0.0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">En Yüksek</div>
+          <div id="stat-highest" class="stat-value">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">En Düşük</div>
+          <div id="stat-lowest" class="stat-value">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Kalan Süre</div>
+          <div id="stat-time-left" class="stat-value">0s</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MANUAL VOTE ENTRY -->
+    <section class="card">
+      <h2>🗳 Manuel Oy Girişi <span class="badge">Yedek</span></h2>
+      <p class="help-text">TikTok otomatik çekmezse bu alanı kullanabilirsiniz.</p>
+      <div class="input-group">
+        <input type="text" id="vote-username" placeholder="Kullanıcı adı" autocomplete="off">
+        <input type="number" id="vote-score" placeholder="Puan (1-10)" min="1" max="10" style="max-width:120px;">
+        <button class="btn btn-primary" onclick="addVote()">Oy Ver</button>
+      </div>
+      <div class="quick-vote-section">
+        <label class="help-text">Hızlı puan:</label>
+        <div class="quick-vote-buttons">
+          <button class="btn-score btn-score-low" onclick="quickScore(1)">1</button>
+          <button class="btn-score btn-score-low" onclick="quickScore(2)">2</button>
+          <button class="btn-score btn-score-low" onclick="quickScore(3)">3</button>
+          <button class="btn-score btn-score-mid" onclick="quickScore(4)">4</button>
+          <button class="btn-score btn-score-mid" onclick="quickScore(5)">5</button>
+          <button class="btn-score btn-score-mid" onclick="quickScore(6)">6</button>
+          <button class="btn-score btn-score-high" onclick="quickScore(7)">7</button>
+          <button class="btn-score btn-score-high" onclick="quickScore(8)">8</button>
+          <button class="btn-score btn-score-high" onclick="quickScore(9)">9</button>
+          <button class="btn-score btn-score-high" onclick="quickScore(10)">10</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- RACON ENTRY -->
+    <section class="card">
+      <h2>🎩 Manuel Racon Girişi <span class="badge">Yedek</span></h2>
+      <div class="input-group">
+        <input type="text" id="racon-username" placeholder="Kullanıcı adı" autocomplete="off">
+        <input type="number" id="racon-coins" placeholder="Jeton" min="1" style="max-width:120px;">
+        <button class="btn btn-gold" onclick="addRacon()">🎩 Racon</button>
+      </div>
+    </section>
+
+    <!-- QUEUE MANAGEMENT -->
+    <section class="card">
+      <h2>📋 Sıra Yönetimi</h2>
+      <div class="input-group">
+        <input type="text" id="queue-name" placeholder="Eklenecek isim" autocomplete="off">
+        <button class="btn btn-info" onclick="addToQueue()">Ekle</button>
+      </div>
+      <div id="queue-list" class="queue-container"></div>
+      <button class="btn btn-info btn-full" onclick="nextInQueue()">⏭ Sıradakine Geç</button>
+    </section>
+
+    <div class="grid-2-col">
+      <!-- VOTES TABLE -->
+      <section class="card">
+        <h2>🗳 Verilen Oylar</h2>
+        <div class="table-container">
+          <table id="votes-table">
+            <thead><tr><th>Kullanıcı</th><th>Puan</th><th>Zaman</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- RACONS TABLE -->
+      <section class="card">
+        <h2>🎩 Raconlar</h2>
+        <div class="table-container">
+          <table id="racons-table">
+            <thead><tr><th>Kullanıcı</th><th>Jeton</th><th>Zaman</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- HISTORY -->
+    <section class="card">
+      <h2>📜 Geçmiş</h2>
+      <div class="table-container">
+        <table id="history-table">
+          <thead><tr><th>İsim</th><th>Ortalama</th><th>Toplam Oy</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- RESET -->
+    <section class="card" style="text-align:center;">
+      <button class="btn btn-danger" onclick="resetAll()">🗑 Her Şeyi Sıfırla</button>
+    </section>
+  </div>
+
+  <script>
+    if (window.location.protocol === 'file:') {
+      alert("UYARI: Sayfayı klasörden çift tıklayarak açtınız! Sistem bu şekilde çalışamaz.\n\nLütfen adres çubuğuna şunu yazın: http://localhost:3000/panel.html");
+      document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:50px;'>Lütfen tarayıcınıza http://localhost:3000/panel.html yazarak girin.</h1>";
+    }
+  </script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="panel.js?v=3"></script>
+</body>
+</html>
