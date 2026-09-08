@@ -4,6 +4,21 @@ body {
   color: white;
   margin: 0;
   padding: 0;
+  position: relative;
+  min-height: 100vh;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url('background.png');
+  background-repeat: repeat; /* Her tarafa yayılması için */
+  background-position: top left;
+  background-size: 150px; /* Küçük küçük görünmesi için boyut */
+  opacity: 0.2; /* Daha görünür olması için saydamlık artırıldı */
+  z-index: -1;
+  pointer-events: none;
 }
 
 .badge {

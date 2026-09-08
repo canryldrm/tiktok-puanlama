@@ -33,10 +33,22 @@ function getRoom(roomId) {
         queue: [],
         currentQueueIndex: -1,
         history: [],
-        raconGiftName: 'Şapka & Bıyık'
+        raconGiftName: 'Şapka & Bıyık',
+        raconSortType: 'coins'
       },
       tiktokConnection: null,
-      timerInterval: null
+      timerInterval: null,
+      userCache: {},
+      giftCache: [
+        { name: 'Gül', coins: 1 },
+        { name: 'TikTok', coins: 1 },
+        { name: 'Nazar Boncuğu', coins: 5 },
+        { name: 'Şapka & Bıyık', coins: 99 },
+        { name: 'Öpücük', coins: 150 },
+        { name: 'Para Tabancası', coins: 500 },
+        { name: 'Yat', coins: 9888 },
+        { name: 'Aslan', coins: 29999 }
+      ]
     });
   }
   return rooms.get(roomId);
@@ -63,8 +75,17 @@ function calculateAverage(roomId) {
   state.totalVotes = state.votes.length;
 }
 
+function cacheUser(room, uniqueId, nickname, profilePic) {
+  if (profilePic) {
+    if (uniqueId) room.userCache[uniqueId.toLowerCase()] = profilePic;
+    if (nickname) room.userCache[nickname.toLowerCase()] = profilePic;
+  }
+}
+
 function processVote(roomId, userId, username, profilePic, score) {
   const room = getRoom(roomId);
+  cacheUser(room, userId, username, profilePic);
+// ...
   const state = room.state;
   if (!state.votingActive) return false;
   if (score < 1 || score > 10) return false;
@@ -91,6 +112,7 @@ function processVote(roomId, userId, username, profilePic, score) {
 
 function processRacon(roomId, userId, username, profilePic, coins) {
   const room = getRoom(roomId);
+  cacheUser(room, userId, username, profilePic);
   const state = room.state;
   state.racons.push({
     userId,
@@ -104,14 +126,16 @@ function processRacon(roomId, userId, username, profilePic, coins) {
   broadcastState(roomId);
 }
 
-function startVoting(roomId) {
+function startVoting(roomId, customDuration = 30) {
   const room = getRoom(roomId);
   const state = room.state;
   if (state.votingActive) return;
 
+  const d = parseInt(customDuration, 10) || 30;
+
   state.votingActive = true;
-  state.timeLeft = 30;
-  state.totalTime = 30;
+  state.timeLeft = d;
+  state.totalTime = d;
   state.votes = [];
   state.average = 0;
   state.totalVotes = 0;
@@ -142,13 +166,16 @@ function stopVoting(roomId) {
   calculateAverage(roomId);
 
   let personName = 'Bilinmeyen';
+  let personPic = '';
   if (state.currentQueueIndex >= 0 && state.currentQueueIndex < state.queue.length) {
     personName = state.queue[state.currentQueueIndex].name;
+    personPic = state.queue[state.currentQueueIndex].profilePic || '';
     state.queue[state.currentQueueIndex].result = state.average;
   }
 
   state.history.unshift({
     name: personName,
+    profilePic: personPic,
     average: state.average,
     totalVotes: state.totalVotes,
     timestamp: Date.now()
@@ -175,6 +202,7 @@ function connectToTikTok(roomId, username) {
   });
 
   room.tiktokConnection.on('chat', data => {
+    cacheUser(room, data.uniqueId, data.nickname, data.profilePictureUrl);
     if (!state.votingActive) return;
     const comment = data.comment.trim();
     const isNumber = /^\d+$/.test(comment);
@@ -187,6 +215,25 @@ function connectToTikTok(roomId, username) {
   });
 
   room.tiktokConnection.on('gift', data => {
+    room.userCache[data.uniqueId] = {
+        profilePic: data.profilePictureUrl
+    };
+    
+    const existingGift = room.giftCache.find(g => g.name === data.giftName);
+    if (!existingGift) {
+        room.giftCache.push({
+            name: data.giftName,
+            coins: data.diamondCount,
+            pictureUrl: data.giftPictureUrl
+        });
+        if (room.giftCache.length > 50) room.giftCache.shift();
+        io.to(roomId).emit('gifts:update', room.giftCache);
+    } else if (!existingGift.pictureUrl && data.giftPictureUrl) {
+        existingGift.pictureUrl = data.giftPictureUrl;
+        io.to(roomId).emit('gifts:update', room.giftCache);
+    }
+
+    cacheUser(room, data.uniqueId, data.nickname, data.profilePictureUrl);
     const giftName = (data.giftName || '').toLowerCase();
     const targetName = (state.raconGiftName || '').toLowerCase();
     
@@ -208,6 +255,14 @@ function connectToTikTok(roomId, username) {
         processRacon(roomId, data.uniqueId, data.nickname || data.uniqueId, data.profilePictureUrl, coins);
       }
     }
+  });
+
+  room.tiktokConnection.on('like', data => {
+    cacheUser(room, data.uniqueId, data.nickname, data.profilePictureUrl);
+  });
+
+  room.tiktokConnection.on('member', data => {
+    cacheUser(room, data.uniqueId, data.nickname, data.profilePictureUrl);
   });
 
   room.tiktokConnection.on('connected', () => {
@@ -277,12 +332,12 @@ app.post('/api/disconnect', (req, res) => {
 });
 
 app.post('/api/voting/start', (req, res) => {
-  const { roomId } = req.body;
+  const { roomId, duration } = req.body;
   if (!roomId) return res.status(400).json({ error: 'roomId gerekli' });
   const room = getRoom(roomId);
   if (room.state.votingActive) return res.status(400).json({ error: 'Oylama zaten aktif' });
   
-  startVoting(roomId);
+  startVoting(roomId, duration);
   res.json({ success: true, message: 'Oylama başlatıldı' });
 });
 
@@ -328,7 +383,10 @@ app.post('/api/queue/add', (req, res) => {
   if (!roomId || !name) return res.status(400).json({ error: 'roomId ve isim gerekli' });
   
   const room = getRoom(roomId);
-  room.state.queue.push({ name: name.trim(), result: null });
+  const cleanName = name.trim().replace(/^@/, '').toLowerCase();
+  const profilePic = room.userCache[cleanName] || '';
+
+  room.state.queue.push({ name: name.trim(), profilePic: profilePic, result: null });
   broadcastState(roomId);
   res.json({ success: true, message: 'Sıraya eklendi' });
 });
@@ -375,8 +433,9 @@ app.post('/api/queue/next', (req, res) => {
     state.currentQueueIndex = 0;
   }
 
-  startVoting(roomId);
-  res.json({ success: true, message: 'Sıradaki kişiye geçildi' });
+  // startVoting(roomId); iptal edildi, oylama manuel başlatılacak.
+  broadcastState(roomId);
+  res.json({ success: true, message: 'Sıradaki kişiye geçildi (Oylamayı manuel başlatın)' });
 });
 
 app.get('/api/status', (req, res) => {
@@ -385,14 +444,42 @@ app.get('/api/status', (req, res) => {
   res.json(getRoom(roomId).state);
 });
 
-app.post('/api/settings/racon-gift', (req, res) => {
-  const { roomId, giftName } = req.body;
+app.post('/api/settings/racon', (req, res) => {
+  const { roomId, giftName, sortType } = req.body;
   if (!roomId || !giftName) return res.status(400).json({ error: 'roomId ve hediye adı gerekli' });
   
   const room = getRoom(roomId);
   room.state.raconGiftName = giftName;
+  if (sortType) room.state.raconSortType = sortType;
   broadcastState(roomId);
-  res.json({ success: true, message: 'Racon hediye ayarı güncellendi' });
+  res.json({ success: true, message: 'Racon ayarları güncellendi' });
+});
+
+app.post('/api/test/trigger', (req, res) => {
+  const { roomId, type } = req.body;
+  if (!roomId) return res.status(400).json({ error: 'roomId gerekli' });
+  
+  const room = getRoom(roomId);
+  const state = room.state;
+
+  if (type === 'vote') {
+    const randomScore = Math.floor(Math.random() * 10) + 1;
+    // Gerçek processVote fonksiyonunu çağırarak ortalama puanı da (ortadaki büyük sayıyı) güncelleyelim
+    processVote(roomId, 'test_user_' + Date.now(), 'TestKullanıcı', '', randomScore);
+  } else if (type === 'racon') {
+    processRacon(roomId, 'testuser', 'TestRacon', '', Math.floor(Math.random() * 5000) + 100);
+  } else if (type === 'leaderboard') {
+    state.history = [
+      { name: 'Mehmet (Örnek)', average: 9.5, totalVotes: 150, timestamp: Date.now() },
+      { name: 'Ahmet (Örnek)', average: 8.4, totalVotes: 95, timestamp: Date.now() - 1000 },
+      { name: 'Zeynep (Örnek)', average: 7.2, totalVotes: 80, timestamp: Date.now() - 2000 },
+      { name: 'Ali (Örnek)', average: 5.5, totalVotes: 45, timestamp: Date.now() - 3000 },
+      { name: 'Ayşe (Örnek)', average: 3.1, totalVotes: 20, timestamp: Date.now() - 4000 }
+    ];
+    broadcastState(roomId);
+  }
+  
+  res.json({ success: true, message: 'Test verisi gönderildi. (Kaldırmak için Ayarları Sıfırla yapabilirsiniz)' });
 });
 
 app.post('/api/reset', (req, res) => {
@@ -424,8 +511,11 @@ io.on('connection', (socket) => {
   socket.on('joinRoom', (roomId) => {
     if (!roomId) return;
     socket.join(roomId);
-    console.log(`[SOCKET] ${socket.id} joined room: ${roomId}`);
-    socket.emit('state:update', getRoom(roomId).state);
+    const room = getRoom(roomId);
+    socket.emit('state:update', room.state);
+    if (room.giftCache) {
+        socket.emit('gifts:update', room.giftCache);
+    }
   });
 
   socket.on('disconnect', () => {

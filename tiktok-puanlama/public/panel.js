@@ -28,6 +28,9 @@ document.getElementById('overlay-url').value = overlayUrl;
 const raconOverlayUrl = `${window.location.origin}/racon-overlay.html?room=${currentRoomId}`;
 document.getElementById('racon-overlay-url').value = raconOverlayUrl;
 
+const leaderboardOverlayUrl = `${window.location.origin}/leaderboard-overlay.html?room=${currentRoomId}`;
+document.getElementById('leaderboard-overlay-url').value = leaderboardOverlayUrl;
+
 function copyOverlayUrl() {
   const input = document.getElementById('overlay-url');
   navigator.clipboard.writeText(input.value).then(() => {
@@ -47,6 +50,17 @@ function copyRaconOverlayUrl() {
     input.select();
     document.execCommand('copy');
     showToast('Racon Overlay URL kopyalandı!', 'success');
+  });
+}
+
+function copyLeaderboardOverlayUrl() {
+  const input = document.getElementById('leaderboard-overlay-url');
+  navigator.clipboard.writeText(input.value).then(() => {
+    showToast('Sıralama Overlay URL kopyalandı!', 'success');
+  }).catch(() => {
+    input.select();
+    document.execCommand('copy');
+    showToast('Sıralama Overlay URL kopyalandı!', 'success');
   });
 }
 
@@ -115,13 +129,30 @@ function disconnectTikTok() {
   apiCall('/api/disconnect', 'POST');
 }
 
-function saveRaconGift() {
-  const giftName = document.getElementById('racon-gift-name').value;
-  apiCall('/api/settings/racon-gift', 'POST', { giftName });
+function updateRaconGiftInput() {
+  const select = document.getElementById('racon-gift-select');
+  const input = document.getElementById('racon-gift-name');
+  if (select.value === 'custom') {
+    input.style.display = 'block';
+    input.value = '';
+    input.focus();
+  } else {
+    input.style.display = 'none';
+    input.value = select.value;
+  }
+}
+
+function saveRaconSettings() {
+  const select = document.getElementById('racon-gift-select');
+  const giftName = select.value === 'custom' ? document.getElementById('racon-gift-name').value : select.value;
+  const sortType = document.getElementById('racon-sort-type').value;
+  apiCall('/api/settings/racon', 'POST', { giftName, sortType });
 }
 
 function startVoting() {
-  apiCall('/api/voting/start', 'POST');
+  const durationInput = document.getElementById('voting-duration');
+  const duration = durationInput ? parseInt(durationInput.value, 10) : 30;
+  apiCall('/api/voting/start', 'POST', { duration: duration });
 }
 
 function stopVoting() {
@@ -177,6 +208,10 @@ function resetAll() {
   if (confirm('Tüm oylar, kuyruk ve geçmiş silinecek. Emin misiniz?')) {
     apiCall('/api/reset', 'POST');
   }
+}
+
+function sendTestData(type) {
+  apiCall('/api/test/trigger', 'POST', { type });
 }
 
 // =============================================
@@ -321,3 +356,52 @@ function showToast(message, type = 'info') {
     setTimeout(() => el.remove(), 500);
   }, 3000);
 }
+
+socket.on('gifts:update', (gifts) => {
+  renderKnownGifts(gifts);
+});
+
+function renderKnownGifts(gifts) {
+  const container = document.getElementById('known-gifts-container');
+  if (!container) return;
+  container.innerHTML = '';
+  
+  if (!gifts || gifts.length === 0) {
+    container.innerHTML = '<span style="color:#aaa; font-size:12px;">Henüz hediye algılanmadı...</span>';
+    return;
+  }
+  
+  gifts.forEach(g => {
+    const btn = document.createElement('div');
+    btn.className = 'btn-gift';
+    btn.style.cssText = 'display:inline-flex; align-items:center; gap:5px; background:rgba(0,0,0,0.4); padding:5px 10px; border-radius:20px; cursor:pointer; border:1px solid #333; transition:0.2s;';
+    
+    btn.onmouseover = () => btn.style.border = '1px solid #FFD700';
+    btn.onmouseout = () => btn.style.border = '1px solid #333';
+    
+    btn.onclick = () => {
+      const select = document.getElementById('racon-gift-select');
+      const input = document.getElementById('racon-gift-name');
+      select.value = 'custom';
+      input.style.display = 'block';
+      input.value = g.name;
+      saveRaconSettings();
+      showToast(g.name + ' Racon hediyesi seçildi!', 'success');
+    };
+    
+    if (g.pictureUrl) {
+      const img = document.createElement('img');
+      img.src = g.pictureUrl;
+      img.style.cssText = 'width:24px; height:24px; border-radius:50%; object-fit:cover;';
+      btn.appendChild(img);
+    }
+    
+    const text = document.createElement('span');
+    text.textContent = g.name + ' (' + g.coins + ')';
+    text.style.cssText = 'color:white; font-size:12px;';
+    btn.appendChild(text);
+    
+    container.appendChild(btn);
+  });
+}
+

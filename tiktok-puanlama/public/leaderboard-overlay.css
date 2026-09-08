@@ -2,19 +2,20 @@
 body { background: transparent !important; overflow: hidden; font-family: 'Poppins', sans-serif; padding: 30px; }
 html { background: transparent !important; }
 
-#racons-section {
+#leaderboard-section {
     width: 450px;
 }
 
 .section-header {
-    color: #FFD700;
+    color: #00ff88;
     font-family: 'Russo One', sans-serif;
     margin-bottom: 20px;
-    font-size: 32px;
-    text-shadow: 0 0 15px rgba(255,215,0,0.6);
+    font-size: 30px;
+    text-shadow: 0 0 15px rgba(0,255,136,0.6);
+    text-transform: uppercase;
 }
 
-.racon-item {
+.leaderboard-item {
     background: rgba(0,0,0,0.8);
     backdrop-filter: blur(10px);
     border-radius: 20px;
@@ -23,43 +24,49 @@ html { background: transparent !important; }
     align-items: center;
     gap: 20px;
     margin-bottom: 15px;
-    border-left: 8px solid #FFD700;
+    border-left: 8px solid #00ff88;
+    box-shadow: 0 0 20px rgba(0,255,136,0.2);
     animation: slideInLeft 0.5s ease-out;
-    box-shadow: 0 0 25px rgba(255,215,0,0.3);
-    transition: opacity 1s ease-out;
 }
 
-.racon-avatar {
-    width: 70px; height: 70px;
+.rank-badge {
+    background: #00ff88;
+    color: #000;
+    font-family: 'Russo One', sans-serif;
+    font-size: 26px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.person-avatar {
+    width: 60px; height: 60px;
     border-radius: 50%;
     border: 3px solid rgba(255,255,255,0.4);
     object-fit: cover;
     background: linear-gradient(45deg, #333, #666);
 }
 
-.racon-username {
+.person-name {
     color: white;
-    font-size: 32px;
+    font-size: 28px;
     flex: 1;
     font-weight: 600;
     text-shadow: 2px 2px 4px #000;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.racon-score {
-    background: #FFD700;
-    color: #000;
-    border-radius: 12px;
-    padding: 8px 20px;
-    font-weight: bold;
-    font-size: 26px;
-}
-
-.racon-coins {
-    color: #00d4ff;
-    font-size: 22px;
-    font-weight: 700;
-    margin-right: 15px;
-    text-shadow: 1px 1px 3px #000;
+.person-score {
+    color: #FFD700;
+    font-size: 32px;
+    font-family: 'Russo One', sans-serif;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
 }
 
 .hidden { display: none !important; }

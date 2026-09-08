@@ -28,6 +28,11 @@
         <input type="text" id="racon-overlay-url" readonly value="Yükleniyor...">
         <button onclick="copyRaconOverlayUrl()" class="btn btn-secondary">🎩 Racon Overlay Kopyala</button>
       </div>
+
+      <div class="copy-group">
+        <input type="text" id="leaderboard-overlay-url" readonly value="Yükleniyor...">
+        <button onclick="copyLeaderboardOverlayUrl()" class="btn btn-secondary">🏆 Sıralama Overlay Kopyala</button>
+      </div>
       
       <div class="obs-tips">
         <small>💡 Önerilen çözünürlük: <strong>1920 × 1080</strong></small>
@@ -51,17 +56,46 @@
 
     <!-- RACON GIFT SETTING -->
     <section class="card">
-      <h2>🎩 Racon Hediye Ayarı</h2>
+      <h2>🎩 Racon Ayarları</h2>
       <div class="input-group">
-        <input type="text" id="racon-gift-name" value="Şapka & Bıyık" placeholder="Hediye Adı">
-        <button class="btn btn-gold" onclick="saveRaconGift()">Kaydet</button>
+        <label style="margin-right:10px;">Hediye:</label>
+        <select id="racon-gift-select" onchange="updateRaconGiftInput()" style="flex:1;">
+           <option value="Şapka & Bıyık">Şapka & Bıyık</option>
+           <option value="Gül">Gül</option>
+           <option value="TikTok">TikTok</option>
+           <option value="Aslan">Aslan</option>
+           <option value="Yat">Yat</option>
+           <option value="Para Tabancası">Para Tabancası</option>
+           <option value="custom">-- Diğer (Elle Yaz) --</option>
+        </select>
+        <input type="text" id="racon-gift-name" value="Şapka & Bıyık" placeholder="Hediye Adı" style="display:none; flex:1;">
       </div>
-      <small class="help-text">TikTok hediye adını girin. Bu hediyeyi gönderenler otomatik 10 puan alır (ortalamaya dahil değil).</small>
+        <div class="form-group" style="margin-top: 15px;">
+          <label for="racon-sort-type">Racon Sıralaması (Ekranda):</label>
+          <select id="racon-sort-type" class="form-control" onchange="updateRaconSettings()">
+            <option value="coins" selected>Hediyeye Göre (En Fazla Jeton)</option>
+            <option value="newest">Zamana Göre (En Yeniler)</option>
+          </select>
+        </div>
+      <button class="btn btn-gold" onclick="saveRaconSettings()" style="margin-top: 10px; width: 100%;">Ayarları Kaydet</button>
+      <small class="help-text">Seçtiğiniz hediyeyi atanlar otomatik 10 puan (Racon) alır ve ekranda belirir.</small>
+      
+      <div style="margin-top: 20px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+        <h4 style="margin:0 0 10px 0; color:#00ff88; font-size:14px;">🎁 Bilinen / Canlı Yakalanan Hediyeler</h4>
+        <small class="help-text">Yayında bir hediye atıldığında burada belirir. Resmine tıklayarak Racon hediyesi yapabilirsin!</small>
+        <div id="known-gifts-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; max-height: 200px; overflow-y: auto;">
+            <!-- Hediyeler buraya gelecek -->
+        </div>
+      </div>
     </section>
 
     <!-- VOTING CONTROL -->
     <section class="card">
       <h2>⏱ Oylama Kontrolü</h2>
+      <div class="input-group" style="margin-bottom: 15px;">
+        <label for="voting-duration" style="align-self: center; font-weight: bold; margin-right: 10px;">Süre (Saniye):</label>
+        <input type="number" id="voting-duration" value="30" min="5" max="600" style="max-width:100px;">
+      </div>
       <div class="button-group">
         <button id="btn-start-voting" class="btn btn-primary btn-large" onclick="startVoting()">▶ Oylamayı Başlat</button>
         <button id="btn-stop-voting" class="btn btn-danger btn-large" onclick="stopVoting()" disabled>⏹ Oylamayı Durdur</button>
@@ -177,6 +211,18 @@
       </div>
     </section>
 
+    <!-- TEST CONTROLS -->
+    <section class="card" style="border: 2px dashed #33b5e5;">
+      <h2>🛠 Ekran Testi (Tasarım Görmek İçin)</h2>
+      <p class="help-text">Yayından önce tasarımların nasıl durduğunu görmek için test verisi gönderebilirsiniz.</p>
+      <div class="button-group" style="margin-top: 10px;">
+        <button class="btn btn-secondary" onclick="sendTestData('vote')">💬 Test Yorum/Oy Gönder</button>
+        <button class="btn btn-secondary" onclick="sendTestData('racon')">🎩 Test Racon Gönder</button>
+        <button class="btn btn-secondary" onclick="sendTestData('leaderboard')">🏆 Test Sıralama Doldur</button>
+      </div>
+      <small style="display:block; margin-top:10px; color:#aaa;">Not: Testleri bitirince en alttaki "Her Şeyi Sıfırla" butonuyla temizleyebilirsiniz.</small>
+    </section>
+
     <!-- RESET -->
     <section class="card" style="text-align:center;">
       <button class="btn btn-danger" onclick="resetAll()">🗑 Her Şeyi Sıfırla</button>
@@ -190,6 +236,6 @@
     }
   </script>
   <script src="/socket.io/socket.io.js"></script>
-  <script src="panel.js?v=3"></script>
+  <script src="panel.js?v=4"></script>
 </body>
 </html>

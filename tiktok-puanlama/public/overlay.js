@@ -26,7 +26,6 @@ let isSpawningVote = false;
 let resetTimeout = null;
 
 socket.on('state:update', (data) => {
-    // Oylama aktifse sıfırlama zamanlayıcısını iptal et
     if (data.votingActive && resetTimeout) {
         clearTimeout(resetTimeout);
         resetTimeout = null;
@@ -51,13 +50,14 @@ socket.on('vote:new', (vote) => {
 socket.on('voting:ended', () => {
     scoreDisplay.classList.add('pulse');
     
-    // Süre bittiğinde 2.5 saniye final puanını göster, sonra ekranı temizle
     resetTimeout = setTimeout(() => {
         votesList.innerHTML = '';
         voteQueue = [];
         isSpawningVote = false;
         
         updateScore(0);
+        scoreDisplay.classList.add('hidden');
+        if (typeof votingStatus !== 'undefined') votingStatus.classList.add('hidden');
         resetTimeout = null;
     }, 2500);
 });
@@ -82,7 +82,6 @@ function updateScore(average) {
     const numScore = parseFloat(newScore);
     const color = numScore > 0 ? getScoreColor(numScore) : 'white';
     scoreDisplay.style.color = color;
-    scoreDisplay.style.textShadow = `0 0 50px ${color}`;
 }
 
 function updateStatus(active, timeLeft, totalVotes) {
@@ -109,9 +108,13 @@ function updateCurrentPerson(queue, index) {
     }
 }
 
+const votingStatus = document.getElementById('voting-status');
+
 function toggleSections(active) {
     if (active) {
         countdownContainer.classList.remove('hidden');
+        scoreDisplay.classList.remove('hidden');
+        votingStatus.classList.remove('hidden');
         if (currentPerson.textContent) {
             currentPerson.classList.remove('hidden');
         }
@@ -119,15 +122,18 @@ function toggleSections(active) {
         countdownContainer.classList.add('hidden');
         currentPerson.classList.add('hidden');
         
-        // Temizle
-        votesList.innerHTML = '';
-        voteQueue = [];
-        isSpawningVote = false;
+        if (!resetTimeout) {
+            scoreDisplay.classList.add('hidden');
+            votingStatus.classList.add('hidden');
+            votesList.innerHTML = '';
+            voteQueue = [];
+            isSpawningVote = false;
+        }
     }
 }
 
 // ==========================================
-// ALT KAYAN YAZI (MARQUEE) MANTIĞI
+// ALT ALTA (YORUM) MANTIĞI
 // ==========================================
 function addVoteToQueue(vote) {
     voteQueue.push(vote);
@@ -144,13 +150,17 @@ function processVoteQueue() {
     div.className = 'vote-item';
     
     const color = getScoreColor(vote.score);
-    div.style.border = `2px solid ${color}`;
-    div.style.boxShadow = `0 0 20px ${color}`;
+    // div.style.border ve boxShadow kaldırıldı (sade görünüm istendi)
     
     const img = document.createElement('img');
     img.className = 'vote-avatar';
-    img.src = vote.profilePic || '';
-    img.onerror = () => { img.style.display = 'none'; };
+    const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(vote.username)}&background=random&color=fff&size=100`;
+    img.src = vote.profilePic || defaultAvatar;
+    img.onerror = function() {
+        this.onerror = null;
+        this.src = defaultAvatar;
+        this.style.display = 'block';
+    };
 
     const nameSpan = document.createElement('span');
     nameSpan.className = 'vote-username';
@@ -159,16 +169,17 @@ function processVoteQueue() {
     const scoreSpan = document.createElement('span');
     scoreSpan.className = 'vote-score';
     scoreSpan.textContent = vote.score;
-    scoreSpan.style.backgroundColor = color;
+    scoreSpan.style.color = color; // Arka plan yerine yazının kendi rengini değiştirdik
 
     div.appendChild(img);
     div.appendChild(nameSpan);
     div.appendChild(scoreSpan);
     
-    votesList.appendChild(div);
+    votesList.prepend(div);
     
     setTimeout(() => {
         if (div.parentNode === votesList) {
+            // Animasyonla kaybolmasını istersen buraya class eklenebilir.
             votesList.removeChild(div);
         }
     }, 12000); 
@@ -176,5 +187,5 @@ function processVoteQueue() {
     setTimeout(() => {
         isSpawningVote = false;
         processVoteQueue();
-    }, 1500); 
+    }, 500); 
 }
