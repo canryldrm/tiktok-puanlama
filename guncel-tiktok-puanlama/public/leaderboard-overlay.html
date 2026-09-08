@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sıralama Overlay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Russo+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="leaderboard-overlay.css">
+</head>
+<body>
+    <div id="leaderboard-section" class="hidden">
+        <div class="section-header">🏆 GÜNÜN EN İYİLERİ</div>
+        <div id="leaderboard-list"></div>
+    </div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="leaderboard-overlay.js"></script>
+</body>
+</html>

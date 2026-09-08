@@ -1,0 +1,16 @@
+{
+  "name": "tiktok-rating-overlay",
+  "version": "1.0.0",
+  "description": "TikTok Live fotoğraf puanlama overlay sistemi",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "socket.io": "^4.7.5",
+    "tiktok-connector": "^1.6.2",
+    "tiktok-live-connector": "^2.4.4"
+  }
+}
