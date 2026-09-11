@@ -601,10 +601,13 @@ app.post('/api/test/trigger', (req, res) => {
   const room = getRoom(roomId);
   const state = room.state;
 
-  if (type === 'vote') { state.votingActive = true;
-    const randomScore = Math.floor(Math.random() * 10) + 1;
-    processVote(roomId, 'test_user_' + Date.now(), 'TestKullanıcı', 'https://picsum.photos/100/100?random=' + Date.now(), randomScore);
-  } else if (type === 'racon') {
+  if (type === 'vote') {
+      if (!state.votingActive) {
+        startVoting(roomId, 30); // Eger oylama aktif degilse otomatik baslat ki donmasin
+      }
+      const randomScore = Math.floor(Math.random() * 10) + 1;
+      processVote(roomId, 'test_user_' + Date.now(), 'TestKullanici', 'https://picsum.photos/100/100?random=' + Date.now(), randomScore);
+    } else if (type === 'racon') {
     processRacon(roomId, 'testuser', 'TestRacon', 'https://picsum.photos/100/100?random=racon' + Date.now(), Math.floor(Math.random() * 5) + 1);
   } else if (type === 'like') {
     const randomLikes = Math.floor(Math.random() * 50) + 10;
@@ -753,6 +756,7 @@ server.listen(PORT, () => {
   console.log('  ╚══════════════════════════════════════════════════╝');
   console.log(`  🚀 Server is running on port ${PORT}`);
 });
+
 
 
 

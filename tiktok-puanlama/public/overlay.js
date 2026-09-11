@@ -48,6 +48,7 @@ socket.on('vote:new', (vote) => {
 });
 
 function startVotingSequence() {
+    if (window.endVotingTimeout) clearTimeout(window.endVotingTimeout);
     isStarting = true;
     overlay.classList.remove('hidden');
     countdownOverlay.classList.remove('hidden');
@@ -91,7 +92,8 @@ function endVoting() {
     dynamicMessage.style.borderColor = "#ff4444";
     dynamicMessage.style.color = "#ff4444";
     
-    setTimeout(() => {
+    if (window.endVotingTimeout) clearTimeout(window.endVotingTimeout);
+    window.endVotingTimeout = setTimeout(() => {
         overlay.classList.add('hidden');
         votesList.innerHTML = '';
         currentScore = '0.0';
@@ -184,3 +186,5 @@ function addVoteUI(vote) {
         }, 300);
     }
 }
+
+
