@@ -31,38 +31,38 @@ document.getElementById('racon-overlay-url').value = raconOverlayUrl;
 const leaderboardOverlayUrl = `${window.location.origin}/leaderboard-overlay.html?room=${currentRoomId}`;
 document.getElementById('leaderboard-overlay-url').value = leaderboardOverlayUrl;
 
-function copyOverlayUrl() {
-  const input = document.getElementById('overlay-url');
+const likesOverlayUrl = `${window.location.origin}/likes-overlay.html?room=${currentRoomId}`;
+document.getElementById('likes-overlay-url').value = likesOverlayUrl;
+
+const mekanOverlayUrl = `${window.location.origin}/mekan-overlay.html?room=${currentRoomId}`;
+document.getElementById('mekan-overlay-url').value = mekanOverlayUrl;
+
+const raconKraliOverlayUrl = `${window.location.origin}/raconkrali-overlay.html?room=${currentRoomId}`;
+document.getElementById('raconkrali-overlay-url').value = raconKraliOverlayUrl;
+
+const winOverlayUrl = `${window.location.origin}/win-overlay.html?room=${currentRoomId}`;
+document.getElementById('win-overlay-url').value = winOverlayUrl;
+
+const followerOverlayUrl = `${window.location.origin}/follower-overlay.html?room=${currentRoomId}`;
+document.getElementById('follower-overlay-url').value = followerOverlayUrl;
+
+
+
+
+
+function copyUrl(id, name) {
+  const input = document.getElementById(id);
+  if (!input) return;
   navigator.clipboard.writeText(input.value).then(() => {
-    showToast('Ana Overlay URL kopyalandı!', 'success');
-  }).catch(() => {
-    input.select();
-    document.execCommand('copy');
-    showToast('Ana Overlay URL kopyalandı!', 'success');
+    alert(`${name} Overlay URL'si kopyalandı:\n` + input.value);
   });
 }
 
-function copyRaconOverlayUrl() {
-  const input = document.getElementById('racon-overlay-url');
-  navigator.clipboard.writeText(input.value).then(() => {
-    showToast('Racon Overlay URL kopyalandı!', 'success');
-  }).catch(() => {
-    input.select();
-    document.execCommand('copy');
-    showToast('Racon Overlay URL kopyalandı!', 'success');
-  });
-}
+function copyOverlayUrl() { copyUrl('overlay-url', 'Oylama'); }
+function copyRaconOverlayUrl() { copyUrl('racon-overlay-url', 'Racon Sıralaması'); }
+function copyLeaderboardOverlayUrl() { copyUrl('leaderboard-overlay-url', 'Oylama Sıralaması'); }
 
-function copyLeaderboardOverlayUrl() {
-  const input = document.getElementById('leaderboard-overlay-url');
-  navigator.clipboard.writeText(input.value).then(() => {
-    showToast('Sıralama Overlay URL kopyalandı!', 'success');
-  }).catch(() => {
-    input.select();
-    document.execCommand('copy');
-    showToast('Sıralama Overlay URL kopyalandı!', 'success');
-  });
-}
+// Eski copy fonksiyonlarını sildim.
 
 // =============================================
 // SOCKET EVENTS
@@ -71,6 +71,14 @@ socket.on('state:update', (data) => {
   globalState = data;
   updateConnectionUI(data.connected, data.tiktokUsername);
   updateVotingControls(data.votingActive, data.connected);
+  document.getElementById('panel-win-count').textContent = `${data.wins || 0} / ${data.targetWins || 10}`;
+  if (data.themeColor) document.getElementById('theme-color-input').value = data.themeColor;
+  if (data.vipOverride) {
+      if (data.vipOverride.mekanName) document.getElementById('vip-mekan-input').value = data.vipOverride.mekanName;
+      if (data.vipOverride.mekanText !== undefined) document.getElementById('vip-mekan-text').value = data.vipOverride.mekanText || '';
+      if (data.vipOverride.raconName) document.getElementById('vip-racon-input').value = data.vipOverride.raconName;
+      if (data.vipOverride.raconText !== undefined) document.getElementById('vip-racon-text').value = data.vipOverride.raconText || '';
+  }
   updateStats(data);
   updateVotesTable(data.votes || []);
   updateRaconsTable(data.racons || []);
@@ -248,22 +256,7 @@ function updateVotingControls(votingActive, connected) {
 }
 
 function updateStats(data) {
-  document.getElementById('stat-total-votes').textContent = data.totalVotes || 0;
-  document.getElementById('stat-avg-score').textContent = (data.average || 0).toFixed(1);
-  document.getElementById('stat-time-left').textContent = `${data.timeLeft || 0}s`;
-
-  let max = 0, min = 10;
-  if (data.votes && data.votes.length > 0) {
-    data.votes.forEach(v => {
-      if (v.score > max) max = v.score;
-      if (v.score < min) min = v.score;
-    });
-    document.getElementById('stat-highest').textContent = max;
-    document.getElementById('stat-lowest').textContent = min;
-  } else {
-    document.getElementById('stat-highest').textContent = '-';
-    document.getElementById('stat-lowest').textContent = '-';
-  }
+  // Canlı istatistikler arayüzden kaldırıldı.
 }
 
 function formatTime(ms) {
@@ -404,4 +397,73 @@ function renderKnownGifts(gifts) {
     container.appendChild(btn);
   });
 }
+
+
+function updateWins(action) { socket.emit('updateWins', { roomId: currentRoomId, action }); }
+
+
+function setWinCustomText() { 
+    const text = document.getElementById('win-custom-text-input').value; 
+    socket.emit('setWinCustomText', { roomId: currentRoomId, text }); 
+}
+function setTargetWin() {  const target = document.getElementById('win-target-input').value; socket.emit('setTargetWins', { roomId: currentRoomId, target }); }
+
+
+function setThemeColor() { const color = document.getElementById('theme-color-input').value; socket.emit('setThemeColor', { roomId: currentRoomId, color }); }
+
+
+function setVipOverride(type, inputId, textId) {
+  const username = document.getElementById(inputId).value;
+  const text = document.getElementById(textId).value;
+  socket.emit('setVipOverride', { roomId: currentRoomId, type, username, text });
+}
+
+function clearVipOverride(type, inputId, textId) {
+  document.getElementById(inputId).value = '';
+  document.getElementById(textId).value = '';
+  socket.emit('setVipOverride', { roomId: currentRoomId, type, username: null, text: null });
+}
+
+
+
+
+
+function updateGoal() {
+  const title = document.getElementById('goal-title').value;
+  const target = parseInt(document.getElementById('goal-target').value) || 0;
+  socket.emit('updateGoal', { roomId: currentRoomId, title, target });
+}
+function addGoal(amount) {
+  socket.emit('addGoalAmount', { roomId: currentRoomId, amount });
+}
+function timerAction(action) {
+  socket.emit('timerAction', { roomId: currentRoomId, action });
+}
+
+
+
+document.getElementById("alert-overlay-url").value = `${window.location.origin}/alert-overlay.html?room=${currentRoomId}`;
+document.getElementById("goal-overlay-url").value = `${window.location.origin}/goal-overlay.html?room=${currentRoomId}`;
+document.getElementById("timer-overlay-url").value = `${window.location.origin}/timer-overlay.html?room=${currentRoomId}`;
+
+fetch('/api/gifts')
+  .then(res => res.json())
+  .then(gifts => {
+    const select = document.getElementById('racon-gift-select');
+    if(gifts && gifts.length > 0) {
+      gifts.sort((a,b) => b.diamond_count - a.diamond_count);
+      
+      let html = '<option value="">-- Tüm Hediyeler --</option>';
+      gifts.forEach(g => {
+        html += `<option value="${g.name}">${g.name} (${g.diamond_count} 💎)</option>`;
+      });
+      html += '<option value="custom">Özel (Alttan Yazın)</option>';
+      select.innerHTML = html;
+      
+      // Select the current racon setting if possible
+      // This part could be left alone, but we at least populate the list
+    }
+  });
+
+
 
