@@ -14,6 +14,8 @@ const raconsList = document.getElementById('racons-list');
 let currentState = { racons: [], raconSortType: 'newest' };
 
 socket.on('state:update', (data) => {
+    if (data.themeColor) document.documentElement.style.setProperty('--theme-color', data.themeColor);
+
     currentState = data;
     renderRacons();
 });
@@ -38,8 +40,8 @@ function renderRacons() {
     let sortedRacons = [...racons];
     
     if (currentState.raconSortType === 'coins') {
-        // En çok jeton gönderenler (azalan)
-        sortedRacons.sort((a, b) => b.coins - a.coins);
+        // En yüksek puana göre sırala
+        sortedRacons.sort((a, b) => b.score - a.score);
     } else {
         // En yeniler (azalan timestamp)
         sortedRacons.sort((a, b) => b.timestamp - a.timestamp);
@@ -54,6 +56,10 @@ function renderRacons() {
         const div = document.createElement('div');
         div.className = 'racon-item';
         
+        const crownDiv = document.createElement('div');
+        crownDiv.className = 'racon-crown';
+        crownDiv.textContent = '👑';
+
         const img = document.createElement('img');
         img.className = 'racon-avatar';
         // Eğer profil fotoğrafı yoksa veya yüklenemezse ismin baş harflerinden oluşan bir avatar göster
@@ -69,19 +75,17 @@ function renderRacons() {
         nameSpan.className = 'racon-username';
         nameSpan.textContent = racon.username;
 
-        const coinSpan = document.createElement('span');
-        coinSpan.className = 'racon-coins';
-        coinSpan.textContent = `${racon.coins || 0} 💎`;
-
         const scoreSpan = document.createElement('span');
         scoreSpan.className = 'racon-score';
-        scoreSpan.textContent = '10';
+        scoreSpan.textContent = racon.count + 'x';
 
+        div.appendChild(crownDiv);
         div.appendChild(img);
         div.appendChild(nameSpan);
-        div.appendChild(coinSpan);
         div.appendChild(scoreSpan);
         
         raconsList.appendChild(div);
     });
 }
+
+

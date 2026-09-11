@@ -1,4 +1,5 @@
 const express = require('express');
+
 const http = require('http');
 const { Server } = require('socket.io');
 const { WebcastPushConnection } = require('tiktok-connector');
@@ -10,6 +11,60 @@ const io = new Server(server, { cors: { origin: "*" } });
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+const session = require('express-session');
+
+// =============================================
+// 🔐 GİRİŞ BİLGİLERİ — Buradan değiştirin
+// =============================================
+const AUTH_USERNAME = 'selibon';
+const AUTH_PASSWORD = 'medya2023';
+// =============================================
+
+app.use(session({
+  secret: 'selibon-medya-gizli-anahtar-2024',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 8 * 60 * 60 * 1000 } // 8 saat
+}));
+
+// Auth middleware — panel ve API'yi koru
+function requireAuth(req, res, next) {
+  if (req.session && req.session.loggedIn) return next();
+  if (req.path === '/login.html' || req.path === '/login' || req.path === '/api/login') return next();
+  if (req.path.startsWith('/socket.io')) return next();
+  // Overlay'lere erişim serbest (OBS için)
+  const overlayPaths = ['-overlay.html', '-overlay.css', '-overlay.js', '/logo.png', '/background.png', '/panel.css', '/panel.js'];
+  if (overlayPaths.some(p => req.path.endsWith(p) || req.path.includes(p))) return next();
+  // Panel.html → login'e yönlendir
+  if (req.path === '/panel.html' || req.path === '/') return res.redirect('/login.html');
+  // API'ler → 401
+  if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'Giriş yapmanız gerekiyor.' });
+  next();
+}
+
+app.use(requireAuth);
+
+// Login endpoint
+app.post('/api/login', (req, res) => {
+  const { username, password } = req.body;
+  if (username === AUTH_USERNAME && password === AUTH_PASSWORD) {
+    req.session.loggedIn = true;
+    req.session.username = username;
+    return res.json({ success: true });
+  }
+  return res.status(401).json({ error: 'Kullanıcı adı veya şifre hatalı!' });
+});
+
+// Logout endpoint
+app.post('/api/logout', (req, res) => {
+  req.session.destroy();
+  res.json({ success: true });
+});
+
+const axios = require('axios');
+let tikfinityGifts = [];
+axios.get('https://tikfinity.zerody.one/api/getAllGifts?lang=tr-TR&room_id=7398945797854776082').then(res => { tikfinityGifts = res.data; console.log('[TİKTOK] ' + tikfinityGifts.length + ' adet hediye Tikfinity API sinden çekildi.'); }).catch(err => console.error('Hediye çekme hatası:', err.message));
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // =============================================
@@ -23,13 +78,24 @@ function getRoom(roomId) {
       state: {
         connected: false,
         tiktokUsername: '',
-        votingActive: false,
+                votingActive: false,
+                winCustomText: '',
+        themeColor: '#FFD700',
         timeLeft: 30,
         totalTime: 30,
         average: 0,
         totalVotes: 0,
         votes: [],
         racons: [],
+        likes: [],
+        gifters: [],
+        alertsEnabled: true,
+        goal: { title: 'Motor İçin Hedef', current: 0, target: 50000 },
+        timer: { running: false, startTime: null, elapsed: 0 },
+        wins: 0,
+        targetWins: 10,
+        vipOverride: { mekanSahibi: null, raconKrali: null },
+        latestFollower: null,
         queue: [],
         currentQueueIndex: -1,
         history: [],
@@ -40,14 +106,7 @@ function getRoom(roomId) {
       timerInterval: null,
       userCache: {},
       giftCache: [
-        { name: 'Gül', coins: 1 },
-        { name: 'TikTok', coins: 1 },
-        { name: 'Nazar Boncuğu', coins: 5 },
-        { name: 'Şapka & Bıyık', coins: 99 },
-        { name: 'Öpücük', coins: 150 },
-        { name: 'Para Tabancası', coins: 500 },
-        { name: 'Yat', coins: 9888 },
-        { name: 'Aslan', coins: 29999 }
+        { name: 'Şapka & Bıyık', coins: 99 }
       ]
     });
   }
@@ -92,8 +151,7 @@ function processVote(roomId, userId, username, profilePic, score) {
 
   const existingVoteIndex = state.votes.findIndex(v => v.userId === userId);
   if (existingVoteIndex !== -1) {
-    state.votes[existingVoteIndex].score = score;
-    state.votes[existingVoteIndex].timestamp = Date.now();
+    return false;
   } else {
     state.votes.push({
       userId,
@@ -110,19 +168,33 @@ function processVote(roomId, userId, username, profilePic, score) {
   return true;
 }
 
-function processRacon(roomId, userId, username, profilePic, coins) {
+function processRacon(roomId, userId, username, profilePic, addedCount) {
   const room = getRoom(roomId);
   cacheUser(room, userId, username, profilePic);
   const state = room.state;
-  state.racons.push({
-    userId,
-    username,
-    profilePic: profilePic || '',
-    coins,
-    timestamp: Date.now()
-  });
+  
+  const existingIndex = state.racons.findIndex(r => r.userId === userId);
+  let finalScore = 0;
 
-  io.to(roomId).emit('racon:new', { username, profilePic: profilePic || '', coins });
+  if (existingIndex !== -1) {
+    state.racons[existingIndex].count += addedCount;
+    state.racons[existingIndex].score = state.racons[existingIndex].count * 100;
+    state.racons[existingIndex].timestamp = Date.now();
+    finalScore = state.racons[existingIndex].score;
+  } else {
+    const newScore = addedCount * 100;
+    state.racons.push({
+      userId,
+      username,
+      profilePic: profilePic || '',
+      count: addedCount,
+      score: newScore,
+      timestamp: Date.now()
+    });
+    finalScore = newScore;
+  }
+
+  io.to(roomId).emit('racon:new', { username, profilePic: profilePic || '', score: finalScore });
   broadcastState(roomId);
 }
 
@@ -216,7 +288,7 @@ function connectToTikTok(roomId, username) {
 
   room.tiktokConnection.on('gift', data => {
     room.userCache[data.uniqueId] = {
-        profilePic: data.profilePictureUrl
+        profilePic: data.profilePictureUrl, timestamp: Date.now()
     };
     
     const existingGift = room.giftCache.find(g => g.name === data.giftName);
@@ -237,28 +309,93 @@ function connectToTikTok(roomId, username) {
     const giftName = (data.giftName || '').toLowerCase();
     const targetName = (state.raconGiftName || '').toLowerCase();
     
-    let isRacon = false;
-    if (targetName) {
-      const targetWords = targetName.split('&').map(w => w.trim()).filter(Boolean);
-      if (targetWords.length > 0) {
-        isRacon = targetWords.some(word => giftName.includes(word));
-      } else {
-        isRacon = giftName.includes(targetName);
+    const isComboEnd = data.repeatEnd === true;
+    const isNotComboGift = data.giftType !== 1;
+    
+    if (isComboEnd || isNotComboGift) {
+      // 1) En Fazla Jeton Atan (Top Gifter) Mantığı
+      const coins = (data.diamondCount || 0) * (data.repeatCount || 1);
+      if (coins > 0) {
+        const userId = data.uniqueId;
+        const existing = room.state.gifters.find(g => g.userId === userId);
+        if (existing) {
+          existing.coins += coins;
+          // Eğer bu hediye eskisinden daha değerliyse resmini güncelle
+          if (coins > existing.highestGiftValue) {
+            existing.highestGiftValue = coins;
+            existing.bestGiftPic = data.giftPictureUrl;
+          }
+        } else {
+          room.state.gifters.push({
+            userId,
+            username: data.nickname || data.uniqueId,
+            profilePic: data.profilePictureUrl, timestamp: Date.now() || '',
+            coins: coins,
+            bestGiftPic: data.giftPictureUrl,
+            highestGiftValue: coins
+          });
+        }
       }
-    }
 
-    if (isRacon) {
-      const isComboEnd = data.repeatEnd === true;
-      const isNotComboGift = data.giftType !== 1;
-      if (isComboEnd || isNotComboGift) {
-        const coins = (data.diamondCount || 0) * (data.repeatCount || 1);
-        processRacon(roomId, data.uniqueId, data.nickname || data.uniqueId, data.profilePictureUrl, coins);
+      // 2) Racon Mantığı
+      let isRacon = false;
+      if (targetName) {
+        const targetWords = targetName.split('&').map(w => w.trim()).filter(Boolean);
+        if (targetWords.length > 0) {
+          isRacon = targetWords.some(word => giftName.includes(word));
+        } else {
+          isRacon = giftName.includes(targetName);
+        }
       }
+
+              if (isRacon) {
+          const count = data.repeatCount || 1;
+          processRacon(roomId, data.uniqueId, data.nickname || data.uniqueId, data.profilePictureUrl, count);
+        }
+        
+        // 3) Büyük Hediye Alarmı (100 Jeton ve üzeri)
+        if (room.state.alertsEnabled && coins >= 100) {
+          room.state.latestAlert = {
+            username: data.nickname || data.uniqueId,
+            profilePic: data.profilePictureUrl, timestamp: Date.now() || '',
+            giftName: data.giftName,
+            count: data.repeatCount || 1,
+            coins: coins
+          };
+        }
+        
+        broadcastState(roomId);
     }
   });
 
   room.tiktokConnection.on('like', data => {
-    cacheUser(room, data.uniqueId, data.nickname, data.profilePictureUrl);
+    const room = getRoom(roomId);
+    
+    // YENI LIKES LISTESI MANTIĞI
+    let existing = room.state.likes.find(l => l.username === data.uniqueId);
+    if (existing) {
+      existing.count += data.likeCount;
+    } else {
+      room.state.likes.push({
+        username: data.uniqueId,
+        profilePic: data.profilePictureUrl, timestamp: Date.now(),
+        count: data.likeCount
+      });
+    }
+    // Sort and keep top 50 to avoid memory leak
+    room.state.likes.sort((a,b) => b.count - a.count);
+    room.state.likes = room.state.likes.slice(0, 50);
+
+    broadcastState(roomId);
+  });
+
+  room.tiktokConnection.on('follow', data => {
+    const room = getRoom(roomId);
+    room.state.latestFollower = {
+      username: data.uniqueId,
+      profilePic: data.profilePictureUrl, timestamp: Date.now()
+    };
+    broadcastState(roomId);
   });
 
   room.tiktokConnection.on('member', data => {
@@ -455,6 +592,8 @@ app.post('/api/settings/racon', (req, res) => {
   res.json({ success: true, message: 'Racon ayarları güncellendi' });
 });
 
+app.get('/api/gifts', (req, res) => res.json(tikfinityGifts));
+
 app.post('/api/test/trigger', (req, res) => {
   const { roomId, type } = req.body;
   if (!roomId) return res.status(400).json({ error: 'roomId gerekli' });
@@ -462,19 +601,50 @@ app.post('/api/test/trigger', (req, res) => {
   const room = getRoom(roomId);
   const state = room.state;
 
-  if (type === 'vote') {
+  if (type === 'vote') { state.votingActive = true;
     const randomScore = Math.floor(Math.random() * 10) + 1;
-    // Gerçek processVote fonksiyonunu çağırarak ortalama puanı da (ortadaki büyük sayıyı) güncelleyelim
-    processVote(roomId, 'test_user_' + Date.now(), 'TestKullanıcı', '', randomScore);
+    processVote(roomId, 'test_user_' + Date.now(), 'TestKullanıcı', 'https://picsum.photos/100/100?random=' + Date.now(), randomScore);
   } else if (type === 'racon') {
-    processRacon(roomId, 'testuser', 'TestRacon', '', Math.floor(Math.random() * 5000) + 100);
+    processRacon(roomId, 'testuser', 'TestRacon', 'https://picsum.photos/100/100?random=racon' + Date.now(), Math.floor(Math.random() * 5) + 1);
+  } else if (type === 'like') {
+    const randomLikes = Math.floor(Math.random() * 50) + 10;
+    const existing = state.likes.find(l => l.userId === 'testliker');
+    if (existing) {
+      existing.count += randomLikes;
+    } else {
+      state.likes.push({ userId: 'testliker', username: 'BeğeniciGüzeli', profilePic: 'https://picsum.photos/100/100?random=like', count: randomLikes });
+    }
+    broadcastState(roomId);
+  } else if (type === 'alert') { room.state.latestAlert = { username: 'Büyük Kral', profilePic: 'https://picsum.photos/105', giftName: 'Aslan', count: 1, coins: 29999, timestamp: Date.now() }; broadcastState(roomId); } else if (type === 'follow') {
+    room.state.latestFollower = {
+      username: 'yeni_takipci_' + Math.floor(Math.random() * 1000),
+      profilePic: 'https://picsum.photos/104', timestamp: Date.now()
+    };
+    broadcastState(roomId);
+      } else if (type === 'leaderboard') {
+      state.history = [
+        { name: 'Ahmet_Kral', profilePic: 'https://picsum.photos/101', average: 9.8, totalVotes: 120 },
+        { name: 'MehmetY', profilePic: 'https://picsum.photos/102', average: 8.5, totalVotes: 85 },
+        { name: 'AyseG', profilePic: 'https://picsum.photos/103', average: 7.2, totalVotes: 42 }
+      ];
+      broadcastState(roomId);
+    } else if (type === 'topgifter') {
+    state.gifters.push({
+      userId: 'test_kral',
+      username: 'kullaniciadi_ornek',
+      profilePic: 'https://picsum.photos/100/100?random=kral',
+      coins: Math.floor(Math.random() * 50000) + 1000,
+      bestGiftPic: 'https://picsum.photos/100/100?random=gift',
+      highestGiftValue: 1000
+    });
+    broadcastState(roomId);
   } else if (type === 'leaderboard') {
     state.history = [
-      { name: 'Mehmet (Örnek)', average: 9.5, totalVotes: 150, timestamp: Date.now() },
-      { name: 'Ahmet (Örnek)', average: 8.4, totalVotes: 95, timestamp: Date.now() - 1000 },
-      { name: 'Zeynep (Örnek)', average: 7.2, totalVotes: 80, timestamp: Date.now() - 2000 },
-      { name: 'Ali (Örnek)', average: 5.5, totalVotes: 45, timestamp: Date.now() - 3000 },
-      { name: 'Ayşe (Örnek)', average: 3.1, totalVotes: 20, timestamp: Date.now() - 4000 }
+      { name: 'Mehmet (Örnek)', profilePic: 'https://picsum.photos/100/100?random=1', average: 9.5, totalVotes: 150, timestamp: Date.now() },
+      { name: 'Ahmet (Örnek)', profilePic: 'https://picsum.photos/100/100?random=2', average: 8.4, totalVotes: 95, timestamp: Date.now() - 1000 },
+      { name: 'Zeynep (Örnek)', profilePic: 'https://picsum.photos/100/100?random=3', average: 7.2, totalVotes: 80, timestamp: Date.now() - 2000 },
+      { name: 'Ali (Örnek)', profilePic: 'https://picsum.photos/100/100?random=4', average: 5.5, totalVotes: 45, timestamp: Date.now() - 3000 },
+      { name: 'Ayşe (Örnek)', profilePic: 'https://picsum.photos/100/100?random=5', average: 3.1, totalVotes: 20, timestamp: Date.now() - 4000 }
     ];
     broadcastState(roomId);
   }
@@ -492,6 +662,9 @@ app.post('/api/reset', (req, res) => {
   if (state.votingActive) stopVoting(roomId);
   state.votes = [];
   state.racons = [];
+  state.likes = [];
+  state.gifters = [];
+  state.wins = 0;
   state.average = 0;
   state.totalVotes = 0;
   state.queue = [];
@@ -518,6 +691,52 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('setAlertsEnabled', ({ roomId, enabled }) => { const room = getRoom(roomId); room.state.alertsEnabled = enabled; broadcastState(roomId); });
+  socket.on('updateGoal', ({ roomId, title, target }) => { const room = getRoom(roomId); room.state.goal.title = title; room.state.goal.target = target; broadcastState(roomId); });
+  socket.on('addGoalAmount', ({ roomId, amount }) => { const room = getRoom(roomId); room.state.goal.current += amount; broadcastState(roomId); });
+  socket.on('timerAction', ({ roomId, action }) => { const room = getRoom(roomId); if(action === 'start') { room.state.timer.running = true; room.state.timer.startTime = Date.now(); } else if(action === 'pause') { if(room.state.timer.running) { room.state.timer.elapsed += Date.now() - room.state.timer.startTime; room.state.timer.running = false; room.state.timer.startTime = null; } } else if(action === 'reset') { room.state.timer = { running: false, startTime: null, elapsed: 0 }; } broadcastState(roomId); });
+
+  socket.on('updateWins', ({ roomId, action }) => {
+    if (!roomId) return;
+    const room = getRoom(roomId);
+    if (action === 'inc') room.state.wins++;
+    if (action === 'dec') room.state.wins--;
+    broadcastState(roomId);
+  });
+
+      socket.on('setTargetWins', ({ roomId, target }) => {
+      const room = getRoom(roomId);
+      room.state.targetWins = parseInt(target) || 0;
+      broadcastState(roomId);
+    });
+
+        socket.on('setWinCustomText', ({ roomId, text }) => {
+      const room = getRoom(roomId);
+      room.state.winCustomText = text;
+      broadcastState(roomId);
+    });
+
+    socket.on('setThemeColor', ({ roomId, color }) => {
+      const room = getRoom(roomId);
+      room.state.themeColor = color;
+      broadcastState(roomId);
+    });
+
+  socket.on('setVipOverride', ({ roomId, type, username, text }) => {
+    if (!roomId) return;
+    const room = getRoom(roomId);
+    if (!room.state.vipOverride) room.state.vipOverride = {};
+    
+    if (type === 'mekan') {
+        room.state.vipOverride.mekanName = username ? username.trim() : null;
+        room.state.vipOverride.mekanText = text ? text.trim() : null;
+    } else if (type === 'racon') {
+        room.state.vipOverride.raconName = username ? username.trim() : null;
+        room.state.vipOverride.raconText = text ? text.trim() : null;
+    }
+    broadcastState(roomId);
+  });
+
   socket.on('disconnect', () => {
     console.log(`[SOCKET] Ayrıldı: ${socket.id}`);
   });
@@ -526,10 +745,38 @@ io.on('connection', (socket) => {
 // =============================================
 // START
 // =============================================
+
 server.listen(PORT, () => {
   console.log('');
   console.log('  ╔══════════════════════════════════════════════════╗');
-  console.log('  ║  🎬 TikTok Puanlama Overlay Sistemi (MULTI-ROOM) ║');
+  console.log('  ║    Selibon Medya Overlay (MULTI-ROOM)            ║');
   console.log('  ╚══════════════════════════════════════════════════╝');
   console.log(`  🚀 Server is running on port ${PORT}`);
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

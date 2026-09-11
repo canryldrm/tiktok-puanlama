@@ -4,31 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rating Overlay</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Russo+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;800&family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="overlay.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
-    <div id="overlay">
-        <!-- MERKEZ: Devasa Puan ve Durum -->
-        <div id="center-content">
-            <div id="current-person" class="hidden"></div>
-            <div id="score-display" class="hidden">--</div>
-            
-            <div id="voting-status" class="hidden">
-                <span class="status-dot"></span>
-                <span class="status-text">Oylama kapalı</span>
-            </div>
-            
-            <div id="countdown-container" class="hidden">
-                <div id="countdown"></div>
-            </div>
+    <div id="overlay" class="hidden">
+        
+        <!-- ÜST MERKEZ: Puan ve Mesajlar -->
+        <div id="top-center">
+            <div id="chat-status">Chat konuşuyor - <span id="time-left">0</span> sn -</div>
+            <div id="vote-count"><span id="total-votes-text">0</span> oy</div>
+            <div id="score-display">0.0</div>
+            <div id="dynamic-message">OYLAMA BAŞLADI! 🚀</div>
+            <div id="instruction">1 ile 10 arasın yorumla puanlayın!</div>
         </div>
         
-        <!-- ALT: Sağdan Sola Kayan Oy Verenler -->
+        <!-- SOL TARAF: Son Oylar Yığılımı (Sadece 5 tane) -->
         <div id="votes-list"></div>
+
+        <!-- 3-2-1 Geri Sayım Ekranı -->
+        <div id="countdown-overlay" class="hidden">
+            <div id="countdown-number">3</div>
+        </div>
     </div>
     
     <script src="/socket.io/socket.io.js"></script>
-    <script src="overlay.js?v=2"></script>
+    <script src="overlay.js?v=3"></script>
 </body>
 </html>

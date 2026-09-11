@@ -1,0 +1,63 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: transparent !important; overflow: hidden; font-family: 'Poppins', sans-serif; padding: 30px; }
+html { background: transparent !important; }
+
+#likes-section { width: 450px; }
+
+.section-header {
+    color: var(--theme-color, #FFD700);
+    font-family: 'Russo One', sans-serif;
+    margin-bottom: 20px;
+    font-size: 32px;
+    text-shadow: 0 0 15px rgba(255,215,0,0.6);
+}
+
+.like-item {
+    position: relative;
+    background: transparent;
+    border: none;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    box-shadow: none;
+    animation: slideInLeft 0.5s ease-out;
+}
+
+.like-avatar {
+    width: 55px; height: 55px;
+    border-radius: 50%;
+    border: 3px solid var(--theme-color, #FFD700);
+    object-fit: cover;
+}
+
+.like-username {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px;
+    color: var(--theme-color, #FFD700);
+    font-size: 24px;
+    
+    font-weight: 700;
+}
+
+.like-count {
+    background: transparent;
+    color: var(--theme-color, #FFD700);
+    padding: 0;
+    font-weight: 900;
+    font-size: 28px;
+    text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 3px 3px 6px rgba(0,0,0,0.8);
+}
+
+.hidden { display: none !important; }
+
+@keyframes slideInLeft {
+    from { transform: translateX(-150px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+
+
