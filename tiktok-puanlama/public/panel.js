@@ -10,8 +10,16 @@ const urlParams = new URLSearchParams(window.location.search);
 let currentRoomId = urlParams.get('room');
 
 if (!currentRoomId) {
-  const randomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-  window.location.href = `?room=${randomId}`;
+  let savedRoomId = localStorage.getItem('tiktok_room_id');
+  if (savedRoomId) {
+    window.location.href = '?room=' + savedRoomId;
+  } else {
+    const randomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+    localStorage.setItem('tiktok_room_id', randomId);
+    window.location.href = '?room=' + randomId;
+  }
+} else {
+  localStorage.setItem('tiktok_room_id', currentRoomId);
 }
 
 // Odaya katıl
@@ -466,6 +474,7 @@ fetch('/api/gifts')
       // This part could be left alone, but we at least populate the list
     }
   });
+
 
 
 
