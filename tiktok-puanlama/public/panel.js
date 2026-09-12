@@ -105,9 +105,11 @@ async function apiCall(endpoint, method = 'POST', body = null) {
 
     const res = await fetch(endpoint, options);
     const data = await res.json();
-    if (!data.success) {
-      showToast(data.error || 'Bir hata oluştu', 'error');
-    } else if (data.message) {
+      if (!data.success) {
+        let errMsg = data.error || 'Bir hata oluştu';
+        if (data.details) errMsg += ' Detay: ' + data.details;
+        showToast(errMsg, 'error');
+      } else if (data.message) {
       showToast(data.message, 'success');
     }
     return data;
@@ -464,6 +466,9 @@ fetch('/api/gifts')
       // This part could be left alone, but we at least populate the list
     }
   });
+
+
+
 
 
 
