@@ -177,14 +177,10 @@ function addVoteUI(vote) {
     
     // En fazla 5 tane tut
     while (votesList.children.length > 5) {
-        const lastChild = votesList.lastChild;
-        lastChild.classList.add('fade-out');
-        setTimeout(() => {
-            if (lastChild.parentNode) {
-                lastChild.parentNode.removeChild(lastChild);
-            }
-        }, 300);
+        votesList.removeChild(votesList.lastChild);
     }
 }
+
+
 
 

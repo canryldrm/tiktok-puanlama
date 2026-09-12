@@ -118,7 +118,11 @@ function getRoom(roomId) {
 // =============================================
 function broadcastState(roomId) {
   const room = getRoom(roomId);
-  io.to(roomId).emit('state:update', room.state);
+  if (room.broadcastTimeout) return;
+  room.broadcastTimeout = setTimeout(() => {
+    io.to(roomId).emit('state:update', room.state);
+    room.broadcastTimeout = null;
+  }, 500);
 }
 
 function calculateAverage(roomId) {
@@ -756,6 +760,8 @@ server.listen(PORT, () => {
   console.log('  ╚══════════════════════════════════════════════════╝');
   console.log(`  🚀 Server is running on port ${PORT}`);
 });
+
+
 
 
 
