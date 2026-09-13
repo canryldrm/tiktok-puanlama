@@ -723,3 +723,53 @@ document.addEventListener("keydown", (e) => {
         }
     }
 });
+
+let activeSlotForLiveSelect = null;
+
+async function openLiveSelect(slotId) {
+    if (!currentRoomId) {
+        showToast('Önce bağlanmalısınız!', 'error');
+        return;
+    }
+    activeSlotForLiveSelect = slotId;
+    
+    const res = await fetch('/api/room-users?roomId=' + currentRoomId);
+    const users = await res.json();
+    
+    const listDiv = document.getElementById('liveUserList');
+    listDiv.innerHTML = '';
+    
+    if (users.length === 0) {
+        listDiv.innerHTML = '<div style="padding:20px; color:#aaa; width:100%; text-align:center;">Henüz hafızada kimse yok. Yayında etkileşim (yorum/beğeni/hediye) olduğunda burası dolacaktır.</div>';
+    } else {
+        users.forEach(u => {
+            const card = document.createElement('div');
+            card.style.cssText = 'background:#2a2a3c; border:1px solid #444; border-radius:8px; padding:10px; width:120px; text-align:center; cursor:pointer; transition:0.2s;';
+            card.onmouseover = () => card.style.background = '#3b82f6';
+            card.onmouseout = () => card.style.background = '#2a2a3c';
+            
+            const fallback = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(u.username) + '&background=random';
+            const avatar = u.avatar && !u.avatar.includes('ui-avatars') ? u.avatar : fallback;
+            
+            card.innerHTML = `
+                <img src="${avatar}" style="width:60px; height:60px; border-radius:50%; object-fit:cover; margin-bottom:8px;">
+                <div style="font-size:12px; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${u.username}</div>
+            `;
+            
+            card.onclick = () => {
+                selectLiveUser(u.username, u.avatar);
+            };
+            listDiv.appendChild(card);
+        });
+    }
+    
+    $('#liveUserModal').modal('show');
+}
+
+function selectLiveUser(username, avatar) {
+    if (activeSlotForLiveSelect) {
+        document.getElementById('as-name-' + activeSlotForLiveSelect).value = username;
+        document.getElementById('as-pic-' + activeSlotForLiveSelect).value = avatar;
+        $('#liveUserModal').modal('hide');
+    }
+}

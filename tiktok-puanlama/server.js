@@ -669,6 +669,26 @@ app.get('/api/get-avatar/:username', async (req, res) => {
     res.json({ success: false });
 });
 
+app.get('/api/room-users', (req, res) => {
+    const roomId = req.query.roomId;
+    if (!roomId) return res.json([]);
+    const room = getRoom(roomId);
+    const users = [];
+    if (room && room.userCache) {
+        // userCache içerisindeki benzersiz kullanıcıları listele
+        const seenPics = new Set();
+        for (let username in room.userCache) {
+            const pic = room.userCache[username];
+            // Aynı resmi (nickname ve uniqueId) iki kere eklememek için filtrele
+            if (!seenPics.has(pic)) {
+                users.push({ username: username, avatar: pic });
+                seenPics.add(pic);
+            }
+        }
+    }
+    res.json(users);
+});
+
 app.post('/api/connect', async (req, res) => {
   console.log('[API] /connect isteği geldi:', req.body);
   const { roomId, username } = req.body;
