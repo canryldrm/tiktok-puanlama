@@ -604,7 +604,10 @@ app.get('/api/get-avatar/:username', async (req, res) => {
         if (match) username = match[1];
     }
     username = username.replace('@', '');
-    const userLower = username.toLowerCase();
+    
+    // TÜRKÇE KARAKTER VE BÜYÜK HARF SORUNUNU ÇÖZME
+    username = username.replace(/İ/g, 'i').replace(/I/g, 'i').toLowerCase();
+    const userLower = username;
     
     // YENİ HARİKA MANTIK: Önce odaların önbelleğinden (yayına katılan/yorum/beğeni/hediye atanlar) ara
     for (let r in rooms) {
@@ -627,7 +630,7 @@ app.get('/api/get-avatar/:username', async (req, res) => {
         // User not live, fallback to Method 2
     }
 
-    // Method 2: Scrape TikTok profile page with mobile User-Agent (works offline)
+    // Method 2: Scrape TikTok profile page with mobile User-Agent (works locally)
     try {
         const axios = require('axios');
         const profile = await axios.get(`https://www.tiktok.com/@${username}`, {
@@ -635,7 +638,7 @@ app.get('/api/get-avatar/:username', async (req, res) => {
                 'User-Agent': 'TikTok 26.2.0 rv:262018 (iPhone; iOS 14.4.2; en_US) Cronet',
                 'Accept': 'text/html'
             },
-            timeout: 10000
+            timeout: 5000
         });
         const html = profile.data;
         const match = html.match(/"avatarLarger":"([^"]+)"/);
@@ -643,14 +646,24 @@ app.get('/api/get-avatar/:username', async (req, res) => {
             const avatarUrl = match[1].replace(/\\u002F/g, '/');
             return res.json({ success: true, avatar: avatarUrl, username: username });
         }
-        // Try medium avatar as fallback
-        const match2 = html.match(/"avatarMedium":"([^"]+)"/);
-        if (match2) {
-            const avatarUrl = match2[1].replace(/\\u002F/g, '/');
-            return res.json({ success: true, avatar: avatarUrl, username: username });
+    } catch (e) {
+        // Axios failed (probably blocked by TikTok on Render server)
+    }
+    
+    // Method 3: ULTIMATE FALLBACK - Microlink API (Bypasses Render IP blocks)
+    try {
+        const axios = require('axios');
+        const url = `https://api.microlink.io/?url=${encodeURIComponent('https://www.tiktok.com/@' + username)}`;
+        const res = await axios.get(url, { timeout: 8000 });
+        if (res.data && res.data.data && res.data.data.image && res.data.data.image.url) {
+            const avatarUrl = res.data.data.image.url;
+            // Ignore generic share image
+            if (!avatarUrl.includes('share_img.png')) {
+                return res.json({ success: true, avatar: avatarUrl, username: username, source: 'microlink' });
+            }
         }
     } catch (e) {
-        console.error('[API] /get-avatar scrape hatası:', e.message);
+        console.error('[API] Microlink fallback hatası:', e.message);
     }
 
     res.json({ success: false });
