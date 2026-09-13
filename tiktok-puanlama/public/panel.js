@@ -633,32 +633,39 @@ async function fetchAvatar(slotId) {
     const nameInput = document.getElementById('as-name-' + slotId);
     const picInput = document.getElementById('as-pic-' + slotId);
     let val = nameInput.value.trim();
-    if (!val) return;
+    if (!val) { picInput.value = ''; return; }
     
     // Parse URL if pasted directly
     if (val.includes('tiktok.com/')) {
         const match = val.match(/@([a-zA-Z0-9_.-]+)/);
         if (match) {
             val = match[1];
-            nameInput.value = val; // update field to just username
+            nameInput.value = val;
         }
     }
     
-    // Check if pic is empty, if empty try to fetch
-    if (!picInput.value) {
-        picInput.value = "Yükleniyor...";
-        try {
-            const res = await fetch('/api/get-avatar/' + val);
-            const data = await res.json();
-            if (data.success && data.avatar) {
-                picInput.value = data.avatar;
-            } else {
-                picInput.value = "";
-            }
-        } catch(e) {
-            picInput.value = "";
+    // Always fetch new avatar when username changes
+    picInput.value = "";
+    try {
+        const res = await fetch('/api/get-avatar/' + val);
+        const data = await res.json();
+        if (data.success && data.avatar) {
+            picInput.value = data.avatar;
         }
+    } catch(e) {
+        picInput.value = "";
     }
+}
+
+function resetAllStarPlayers() {
+    for (let i = 1; i <= 4; i++) {
+        document.getElementById('as-name-' + i).value = '';
+        document.getElementById('as-pic-' + i).value = '';
+        const giftSelect = document.getElementById('as-gift-' + i);
+        if (giftSelect) { giftSelect.value = ''; if ($(giftSelect).data('select2')) $(giftSelect).val('').trigger('change'); }
+    }
+    saveAllStarSettings();
+    showToast('Tüm yarışmacılar sıfırlandı!', 'success');
 }
 
 
