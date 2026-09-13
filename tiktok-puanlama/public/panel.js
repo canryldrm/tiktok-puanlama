@@ -491,13 +491,26 @@ fetch('/api/gifts')
       
       let html = '<option value="">-- Tüm Hediyeler --</option>';
       gifts.forEach(g => {
-        html += `<option value="\">\ (\ 💎)</option>`;
-        html += `<option value="${g.name}">${g.name} (${g.diamond_count} 💎)</option>`;
+        const pic = g.image && g.image.url_list ? g.image.url_list[0] : '';
+        html += `<option value="${g.name}" data-image="${pic}">${g.name} (${g.diamond_count} 💎)</option>`;
       });
       html += '<option value="custom">Özel (Alttan Yazın)</option>';
       select.innerHTML = html;
       if(vsGreenSelect) vsGreenSelect.innerHTML = html;
       if(vsRedSelect) vsRedSelect.innerHTML = html;
+
+      setTimeout(() => {
+        function formatGift(gift) {
+          if (!gift.id || gift.id === "custom") return gift.text;
+          var imageUrl = $(gift.element).attr("data-image");
+          if (!imageUrl) return gift.text;
+          return $(`<span style="display:flex; align-items:center; gap:10px;"><img src="${imageUrl}" style="width:24px; height:24px; object-fit:contain; border-radius:4px;" /> ${gift.text}</span>`);
+        }
+        $("#vs-green-gift, #vs-red-gift, #racon-gift-select").select2({
+          templateResult: formatGift,
+          templateSelection: formatGift
+        });
+      }, 100);
         
         let asHtml = '<option value="">-- Sadece Yorum --</option>';
           gifts.forEach(g => {

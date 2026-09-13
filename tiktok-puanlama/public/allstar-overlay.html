@@ -347,7 +347,8 @@
                 <span class="score-label">FPS</span>
               </div>
             </div>
-          </div>
+              ${p.giftPic ? `<div class="gift-row"><img src="${p.giftPic}" /><span>${p.gift}</span></div>` : ""}
+            </div>
         `;
       });
       playersGrid.innerHTML = html;
