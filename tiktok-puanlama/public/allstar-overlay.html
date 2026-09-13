@@ -159,10 +159,8 @@
       font-weight: 800;
       text-transform: uppercase;
       text-shadow: 2px 2px 5px rgba(0,0,0,0.8);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 50%;
+      flex: 1;
+      text-align: left;
     }
     .score-badge {
       background: rgba(255,255,255,0.1);
@@ -336,7 +334,7 @@
             </div>
             <div class="photo-frame">
               <div class="photo-inner">
-                <img src="${p.photo || 'https://ui-avatars.com/api/?name='+p.name+'&background=random'}" class="photo-img">
+                <img src="${(p.photo && p.photo !== 'Yükleniyor...') ? p.photo : 'https://ui-avatars.com/api/?name='+p.name+'&background=random'}" class="photo-img">
               </div>
               <div class="vote-badge">${p.id}</div>
             </div>

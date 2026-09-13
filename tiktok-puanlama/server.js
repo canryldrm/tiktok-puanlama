@@ -102,6 +102,7 @@ function saveRooms() {
       delete copy.timerInterval;
       delete copy.allstarInterval;
       delete copy.rouletteInterval;
+      delete copy.broadcastTimeout;
       delete copy.tiktokConnection;
       
       // Convert Set to Array for JSON

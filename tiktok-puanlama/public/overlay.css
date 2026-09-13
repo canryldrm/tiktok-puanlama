@@ -49,7 +49,7 @@ body {
 }
 
 #score-display {
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'Montserrat', sans-serif;
     font-size: 3rem;
     color: #ffd700;
     text-shadow: 4px 4px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
@@ -62,7 +62,7 @@ body {
     border: 2px solid rgba(255, 215, 0, 0.8);
     background: rgba(0, 0, 0, 0.6);
     padding: 5px 12px;
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'Montserrat', sans-serif;
     font-size: 0.8rem;
     color: #ffd700;
     border-radius: 4px;
@@ -145,7 +145,7 @@ body {
 
 .vote-score {
     color: #00ff88;
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'Montserrat', sans-serif;
     font-size: 1rem;
     margin-top: 4px;
     text-shadow: 1px 1px 0 #000;
@@ -163,7 +163,7 @@ body {
 }
 
 #countdown-number {
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'Montserrat', sans-serif;
     font-size: 8rem;
     color: #fff;
     text-shadow: 0 0 30px #00d4ff, 5px 5px 0 #000;
