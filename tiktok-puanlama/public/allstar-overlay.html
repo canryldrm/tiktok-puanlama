@@ -245,7 +245,38 @@
       animation: fadeIn 1.5s forwards 1s;
       opacity: 0;
     }
-  </style>
+  
+    .gift-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 6px 15px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      animation: pulseGift 2s infinite;
+    }
+    .gift-row img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+    }
+    .gift-row span {
+      color: #ffd700;
+      font-weight: bold;
+      font-size: 14px;
+      text-shadow: 1px 1px 2px #000;
+    }
+    @keyframes pulseGift {
+      0% { transform: scale(1); box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+      50% { transform: scale(1.05); box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3); }
+      100% { transform: scale(1); box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+    }
+
+</style>
 </head>
 <body>
   <audio id="sound-winner" src="sounds/allstar-winner.mp3" preload="auto"></audio>

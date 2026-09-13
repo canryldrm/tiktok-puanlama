@@ -881,7 +881,21 @@ app.post('/api/vs-manual', (req, res) => {
 app.post('/api/allstar-settings', (req, res) => {
     const { roomId, players } = req.body;
     const room = getRoom(roomId);
+    
+    players.forEach(p => {
+        if (p.gift && p.gift.trim() !== "") {
+            const foundGift = tikfinityGifts.find(g => g.name === p.gift);
+            if (foundGift && foundGift.image && foundGift.image.url_list) {
+                p.giftPic = foundGift.image.url_list[0];
+            } else {
+                p.giftPic = "";
+            }
+        } else {
+            p.giftPic = "";
+        }
+    });
     room.state.allstar.players = players;
+
     io.to(roomId).emit('allstarUpdate', room.state.allstar);
     res.json({ success: true });
 });

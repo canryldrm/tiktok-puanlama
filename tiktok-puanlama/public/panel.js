@@ -500,13 +500,28 @@ fetch('/api/gifts')
       if(vsRedSelect) vsRedSelect.innerHTML = html;
         
         let asHtml = '<option value="">-- Sadece Yorum --</option>';
-        gifts.forEach(g => {
-            asHtml += `<option value="${g.name}">${g.name} (${g.diamond_count} Jeton)</option>`;
-        });
-        if(document.getElementById('as-gift-1')) document.getElementById('as-gift-1').innerHTML = asHtml;
-        if(document.getElementById('as-gift-2')) document.getElementById('as-gift-2').innerHTML = asHtml;
-        if(document.getElementById('as-gift-3')) document.getElementById('as-gift-3').innerHTML = asHtml;
-        if(document.getElementById('as-gift-4')) document.getElementById('as-gift-4').innerHTML = asHtml;
+          gifts.forEach(g => {
+            const pic = g.image && g.image.url_list ? g.image.url_list[0] : '';
+            asHtml += `<option value="${g.name}" data-image="${pic}">${g.name} (${g.diamond_count} Jeton)</option>`;
+          });
+          if(document.getElementById('as-gift-1')) document.getElementById('as-gift-1').innerHTML = asHtml;
+          if(document.getElementById('as-gift-2')) document.getElementById('as-gift-2').innerHTML = asHtml;
+          if(document.getElementById('as-gift-3')) document.getElementById('as-gift-3').innerHTML = asHtml;
+          if(document.getElementById('as-gift-4')) document.getElementById('as-gift-4').innerHTML = asHtml;
+
+          // Select2 Init
+          setTimeout(() => {
+            function formatGift(gift) {
+              if (!gift.id) return gift.text;
+              var imageUrl = $(gift.element).attr("data-image");
+              if (!imageUrl) return gift.text;
+              return $(`<span style="display:flex; align-items:center; gap:10px;"><img src="${imageUrl}" style="width:24px; height:24px; object-fit:contain; border-radius:4px;" /> ${gift.text}</span>`);
+            }
+            $(".as-gift").select2({
+              templateResult: formatGift,
+              templateSelection: formatGift
+            });
+          }, 100);
 
       
       // Select the current racon setting if possible

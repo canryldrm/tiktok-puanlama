@@ -6,6 +6,41 @@
   <title>Selibon Medya Overlay - Kontrol Paneli</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="panel.css?v=639246886339688582">
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <style>
+    /* Dark theme for Select2 to match the panel */
+    .select2-container--default .select2-selection--single {
+      background-color: #2a2a35;
+      border: 1px solid #444;
+      border-radius: 5px;
+      height: 40px;
+      color: #fff;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+      color: #fff;
+      line-height: 40px;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+      height: 38px;
+    }
+    .select2-dropdown {
+      background-color: #2a2a35;
+      border: 1px solid #444;
+      color: #fff;
+    }
+    .select2-search input {
+      background-color: #1a1a24;
+      color: #fff;
+      border: 1px solid #444;
+    }
+    .select2-results__option--highlighted[aria-selected] {
+      background-color: #3b82f6 !important;
+    }
+  </style>
+
 </head>
 <body>
 <button onclick="fetch('/api/logout',{method:'POST'}).then(()=>location.href='/login.html')" style="position:fixed;top:14px;right:20px;z-index:9000;background:rgba(255,65,108,0.8);border:none;color:#fff;padding:8px 16px;border-radius:8px;font-family:Poppins,sans-serif;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.5px;">🚪 Çıkış Yap</button>
