@@ -343,8 +343,20 @@ function connectToTikTok(roomId, username) {
   room.tiktokConnection.on('chat', data => {
     cacheUser(room, data.uniqueId, data.nickname, data.profilePictureUrl);
     autoCaptureAvatar(roomId, data.uniqueId, data.profilePictureUrl);
-    
-    // Roulette Voting Logic
+      // All-Star Chat Voting (1, 2, 3, 4)
+      if (room.state.allstar && room.state.allstar.isActive) {
+        const text = data.comment.trim();
+        const vote = parseInt(text, 10);
+        if (!isNaN(vote) && vote >= 1 && vote <= 4) {
+          const player = room.state.allstar.players.find(p => p.id === vote);
+          if (player) {
+            player.score += 1;
+            io.to(roomId).emit("allstarUpdate", room.state.allstar);
+          }
+        }
+      }
+
+      // Roulette Voting Logic
     if (room.state.roulette && room.state.roulette.phase === 'rating') {
       const text = data.comment.trim();
       const vote = parseInt(text, 10);
@@ -422,8 +434,20 @@ function connectToTikTok(roomId, username) {
           });
         }
       }
+        // All-Star Gift Voting
+        if (room.state.allstar && room.state.allstar.isActive) {
+          room.state.allstar.players.forEach(p => {
+            if (p.gift && p.gift.trim() !== "") {
+              const targetGift = p.gift.toLowerCase().trim();
+              if (giftName.includes(targetGift)) {
+                p.score += coins;
+                io.to(roomId).emit("allstarUpdate", room.state.allstar);
+              }
+            }
+          });
+        }
 
-      // 2) Racon Mantığı
+        // 2) Racon Mantığı
       let isRacon = false;
       if (targetName) {
         const targetWords = targetName.split('&').map(w => w.trim()).filter(Boolean);
