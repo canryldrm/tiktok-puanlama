@@ -482,6 +482,7 @@ function connectToTikTok(roomId, username) {
 
   room.tiktokConnection.on('like', data => {
     const room = getRoom(roomId);
+    cacheUser(room, data.uniqueId, data.nickname, data.profilePictureUrl);
     
     // YENI LIKES LISTESI MANTIĞI
     let existing = room.state.likes.find(l => l.username === data.uniqueId);
@@ -593,6 +594,14 @@ app.get('/api/get-avatar/:username', async (req, res) => {
         if (match) username = match[1];
     }
     username = username.replace('@', '');
+    const userLower = username.toLowerCase();
+    
+    // YENİ HARİKA MANTIK: Önce odaların önbelleğinden (yayına katılan/yorum/beğeni/hediye atanlar) ara
+    for (let r in rooms) {
+        if (rooms[r].userCache && rooms[r].userCache[userLower]) {
+            return res.json({ success: true, avatar: rooms[r].userCache[userLower], username: username, source: 'cache' });
+        }
+    }
     
     // Method 1: Try via tiktok-connector (works if user is live)
     try {
@@ -810,6 +819,17 @@ app.post('/api/test/trigger', (req, res) => {
       room.state.vs.redLast = { username: 'EksiciKral', profilePic: 'https://picsum.photos/100/100?random=minus' + Date.now() };
       io.to(roomId).emit('vsUpdate', room.state.vs);
       io.to(roomId).emit('playDrop', { type: 'gift', profilePic: room.state.vs.redLast.profilePic, text: '-' });
+    } else if (type === 'allstar') {
+        if (room.state.allstar && room.state.allstar.players) {
+            // Pick a random player and give them a big score jump
+            const playerIndex = Math.floor(Math.random() * room.state.allstar.players.length);
+            if (room.state.allstar.players[playerIndex]) {
+                room.state.allstar.players[playerIndex].score += 1500;
+                io.to(roomId).emit("allstarUpdate", room.state.allstar);
+                // Also play drop sound
+                io.to(roomId).emit('playDrop', { type: 'gift', profilePic: room.state.allstar.players[playerIndex].photo || '', text: room.state.allstar.players[playerIndex].gift || 'Hediye' });
+            }
+        }
     } else if (type === 'racon') {
     processRacon(roomId, 'testuser', 'TestRacon', 'https://picsum.photos/100/100?random=racon' + Date.now(), Math.floor(Math.random() * 5) + 1);
   } else if (type === 'like') {
