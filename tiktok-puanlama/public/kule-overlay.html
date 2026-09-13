@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Kule Overlay</title>
+  <style>
+    body { margin: 0; overflow: hidden; background-color: transparent; }
+    canvas { display: block; }
+    .matter-elem {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      color: white;
+      font-family: 'Arial', sans-serif;
+      font-weight: bold;
+      text-shadow: 1px 1px 3px black;
+      font-size: 14px;
+      border: 2px solid white;
+      transition: opacity 0.2s;
+    }
+  </style>
+</head>
+<body>
+  <div id="elements-container"></div>
+  
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomId = urlParams.get('room');
+    if (!roomId) { document.body.innerHTML = '<h2>Room ID eksik</h2>'; throw new Error('No room id'); }
+
+    const socket = io();
+    socket.emit('joinRoom', roomId);
+
+    // Fizik Motoru Kurulumu
+    var Engine = Matter.Engine,
+        Render = Matter.Render,
+        Runner = Matter.Runner,
+        Bodies = Matter.Bodies,
+        Composite = Matter.Composite,
+        Events = Matter.Events;
+
+    var engine = Engine.create();
+    var world = engine.world;
+    engine.gravity.y = 2.0; // Hizli dussun
+
+    var width = 1920;
+    var height = 1080;
+
+    // Zemin ve Duvarlar (OBS 1920x1080)
+    var ground = Bodies.rectangle(width / 2, height + 50, width * 2, 100, { isStatic: true });
+    var leftWall = Bodies.rectangle(-50, height / 2, 100, height * 3, { isStatic: true });
+    var rightWall = Bodies.rectangle(width + 50, height / 2, 100, height * 3, { isStatic: true });
+    
+    Composite.add(world, [ground, leftWall, rightWall]);
+
+    var runner = Runner.create();
+    Runner.run(runner, engine);
+
+    const container = document.getElementById('elements-container');
+    const bodiesMap = new Map();
+
+    Events.on(engine, 'afterUpdate', function() {
+      for (let [body, el] of bodiesMap.entries()) {
+        el.style.transform = `translate(${body.position.x - 30}px, ${body.position.y - 30}px) rotate(${body.angle}rad)`;
+      }
+      
+      // Tasanlari Temizle
+      for (let [body, el] of bodiesMap.entries()) {
+        if (body.position.y > height + 200) {
+          Composite.remove(world, body);
+          el.remove();
+          bodiesMap.delete(body);
+        }
+      }
+    });
+
+    socket.on('playDrop', (data) => {
+      // Data = { type: 'vote'|'gift', profilePic, text }
+      spawnBlock(data.profilePic, data.text, data.type);
+    });
+
+    function spawnBlock(picUrl, text, type) {
+      if(bodiesMap.size > 250) {
+         // Kule cok buyurse en alttakileri/eskileri sil (performans)
+         const oldestBody = bodiesMap.keys().next().value;
+         const oldestEl = bodiesMap.get(oldestBody);
+         Composite.remove(world, oldestBody);
+         oldestEl.remove();
+         bodiesMap.delete(oldestBody);
+      }
+
+      const startX = (width / 2) + (Math.random() * 800 - 400); // Ekranin ortasindan etrafa yaysin
+      const startY = -100;
+      
+      var box = Bodies.rectangle(startX, startY, 60, 60, {
+        restitution: 0.3,
+        friction: 0.8,
+        density: 0.05
+      });
+      
+      const el = document.createElement('div');
+      el.className = 'matter-elem';
+      el.style.backgroundImage = `url('${picUrl || 'https://picsum.photos/60'}')`;
+      
+      if(type === 'vote') {
+         el.style.borderColor = '#00d4ff';
+         el.innerHTML = `<span style="background:rgba(0,0,0,0.6); border-radius:4px; padding:0 4px; margin-bottom: 2px;">${text}</span>`;
+      } else {
+         el.style.borderColor = '#ffd700';
+         el.innerHTML = `<span style="background:rgba(255,0,0,0.7); border-radius:4px; padding:0 4px; margin-bottom: 2px; font-size:10px;">${text.substring(0,6)}</span>`;
+      }
+
+      container.appendChild(el);
+      bodiesMap.set(box, el);
+      Composite.add(world, box);
+    }
+  </script>
+</body>
+</html>

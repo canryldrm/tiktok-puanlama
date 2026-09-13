@@ -14,9 +14,16 @@ if (!currentRoomId) {
   if (savedRoomId) {
     window.location.href = '?room=' + savedRoomId;
   } else {
-    const randomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-    localStorage.setItem('tiktok_room_id', randomId);
-    window.location.href = '?room=' + randomId;
+    let userInput = prompt("Lütfen Yayıncı/Oda Adınızı Girin (OBS linkleri buna göre oluşacak, boşluk bırakmayın):");
+    if (userInput && userInput.trim() !== "") {
+        const cleanId = userInput.trim().replace(/[^a-zA-Z0-9_-]/g, "");
+        localStorage.setItem("tiktok_room_id", cleanId);
+        window.location.href = "?room=" + cleanId;
+    } else {
+        const randomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+        localStorage.setItem('tiktok_room_id', randomId);
+        window.location.href = '?room=' + randomId;
+    }
   }
 } else {
   localStorage.setItem('tiktok_room_id', currentRoomId);
@@ -81,6 +88,10 @@ socket.on('state:update', (data) => {
   updateVotingControls(data.votingActive, data.connected);
   document.getElementById('panel-win-count').textContent = `${data.wins || 0} / ${data.targetWins || 10}`;
   if (data.themeColor) document.getElementById('theme-color-input').value = data.themeColor;
+  if (data.vsSettings) {
+      if(document.getElementById('vs-green-gift')) document.getElementById('vs-green-gift').value = data.vsSettings.greenGift || '';
+      if(document.getElementById('vs-red-gift')) document.getElementById('vs-red-gift').value = data.vsSettings.redGift || '';
+  }
   if (data.vipOverride) {
       if (data.vipOverride.mekanName) document.getElementById('vip-mekan-input').value = data.vipOverride.mekanName;
       if (data.vipOverride.mekanText !== undefined) document.getElementById('vip-mekan-text').value = data.vipOverride.mekanText || '';
@@ -149,6 +160,8 @@ function disconnectTikTok() {
 
 function updateRaconGiftInput() {
   const select = document.getElementById('racon-gift-select');
+    const vsGreenSelect = document.getElementById('vs-green-gift');
+    const vsRedSelect = document.getElementById('vs-red-gift');
   const input = document.getElementById('racon-gift-name');
   if (select.value === 'custom') {
     input.style.display = 'block';
@@ -162,6 +175,8 @@ function updateRaconGiftInput() {
 
 function saveRaconSettings() {
   const select = document.getElementById('racon-gift-select');
+    const vsGreenSelect = document.getElementById('vs-green-gift');
+    const vsRedSelect = document.getElementById('vs-red-gift');
   const giftName = select.value === 'custom' ? document.getElementById('racon-gift-name').value : select.value;
   const sortType = document.getElementById('racon-sort-type').value;
   apiCall('/api/settings/racon', 'POST', { giftName, sortType });
@@ -375,6 +390,7 @@ function renderKnownGifts(gifts) {
   }
   
   gifts.forEach(g => {
+        html += `<option value="\">\ (\ 💎)</option>`;
     const btn = document.createElement('div');
     btn.className = 'btn-gift';
     btn.style.cssText = 'display:inline-flex; align-items:center; gap:5px; background:rgba(0,0,0,0.4); padding:5px 10px; border-radius:20px; cursor:pointer; border:1px solid #333; transition:0.2s;';
@@ -384,6 +400,8 @@ function renderKnownGifts(gifts) {
     
     btn.onclick = () => {
       const select = document.getElementById('racon-gift-select');
+    const vsGreenSelect = document.getElementById('vs-green-gift');
+    const vsRedSelect = document.getElementById('vs-red-gift');
       const input = document.getElementById('racon-gift-name');
       select.value = 'custom';
       input.style.display = 'block';
@@ -455,20 +473,41 @@ function timerAction(action) {
 document.getElementById("alert-overlay-url").value = `${window.location.origin}/alert-overlay.html?room=${currentRoomId}`;
 document.getElementById("goal-overlay-url").value = `${window.location.origin}/goal-overlay.html?room=${currentRoomId}`;
 document.getElementById("timer-overlay-url").value = `${window.location.origin}/timer-overlay.html?room=${currentRoomId}`;
+  const kuleEl = document.getElementById('kule-overlay-url'); if(kuleEl) kuleEl.value = `${window.location.origin}/kule-overlay.html?room=${currentRoomId}`;
+  const vsEl = document.getElementById('vs-overlay-url'); if(vsEl) vsEl.value = `${window.location.origin}/vs-overlay.html?room=${currentRoomId}`;
+  const asEl = document.getElementById('allstar-overlay-url'); if(asEl) asEl.value = `${window.location.origin}/allstar-overlay.html?room=${currentRoomId}`;
+
+  
+  
 
 fetch('/api/gifts')
   .then(res => res.json())
   .then(gifts => {
     const select = document.getElementById('racon-gift-select');
+    const vsGreenSelect = document.getElementById('vs-green-gift');
+    const vsRedSelect = document.getElementById('vs-red-gift');
     if(gifts && gifts.length > 0) {
       gifts.sort((a,b) => b.diamond_count - a.diamond_count);
       
       let html = '<option value="">-- Tüm Hediyeler --</option>';
       gifts.forEach(g => {
+        html += `<option value="\">\ (\ 💎)</option>`;
         html += `<option value="${g.name}">${g.name} (${g.diamond_count} 💎)</option>`;
       });
       html += '<option value="custom">Özel (Alttan Yazın)</option>';
       select.innerHTML = html;
+      if(vsGreenSelect) vsGreenSelect.innerHTML = html;
+      if(vsRedSelect) vsRedSelect.innerHTML = html;
+        
+        let asHtml = '<option value="">-- Sadece Yorum --</option>';
+        gifts.forEach(g => {
+            asHtml += `<option value="${g.name}">${g.name} (${g.diamond_count} Jeton)</option>`;
+        });
+        if(document.getElementById('as-gift-1')) document.getElementById('as-gift-1').innerHTML = asHtml;
+        if(document.getElementById('as-gift-2')) document.getElementById('as-gift-2').innerHTML = asHtml;
+        if(document.getElementById('as-gift-3')) document.getElementById('as-gift-3').innerHTML = asHtml;
+        if(document.getElementById('as-gift-4')) document.getElementById('as-gift-4').innerHTML = asHtml;
+
       
       // Select the current racon setting if possible
       // This part could be left alone, but we at least populate the list
@@ -481,3 +520,171 @@ fetch('/api/gifts')
 
 
 
+// --- F9 KISAYOL TUŞU EKLENTİSİ ---
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'F9') {
+    e.preventDefault();
+    if (!document.getElementById('btn-start-voting').disabled) {
+      startVoting();
+    } else if (!document.getElementById('btn-stop-voting').disabled) {
+      stopVoting();
+    }
+  }
+});
+
+
+
+
+
+function saveVSSettings() {
+    const greenGift = document.getElementById('vs-green-gift').value;
+    const redGift = document.getElementById('vs-red-gift').value;
+    
+    apiCall('/api/vs-settings', 'POST', { roomId: currentRoomId, greenGift, redGift }).then(() => {
+        alert('VS Kapışma hediyeleri kaydedildi!');
+    });
+}
+
+function addManualVS(team) {
+    const inputId = team === 'green' ? 'vs-green-manual' : 'vs-red-manual';
+    let username = document.getElementById(inputId).value.trim();
+    if (username.startsWith('@')) username = username.substring(1);
+    if (!username) return alert('Kullanıcı adı girin!');
+    
+    apiCall('/api/vs-manual', 'POST', { roomId: currentRoomId, team, username }).then(() => {
+        document.getElementById(inputId).value = '';
+    });
+}
+
+
+
+
+function saveAllStarSettings() {
+  const players = [];
+  for (let i = 1; i <= 4; i++) {
+    players.push({
+      id: i,
+      name: document.getElementById('as-name-'+i).value.trim(),
+      photo: document.getElementById('as-pic-'+i).value.trim(),
+      gift: document.getElementById('as-gift-'+i).value,
+      score: 0
+    });
+  }
+  fetch('/api/allstar-settings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ roomId: currentRoomId, players: players })
+  }).then(r => r.json()).then(data => {
+    if (data.success) alert("All-Star Ayarları Kaydedildi!");
+  });
+}
+
+function controlAllStar(action) {
+  const time = parseInt(document.getElementById('as-time').value) || 300;
+  fetch('/api/allstar-timer', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ roomId: currentRoomId, action: action, time: time })
+  }).then(r => r.json()).then(data => {
+    if (data.success) console.log("All-Star " + action + " sent");
+  });
+}
+
+
+
+function testAllStar(slotId) {
+  fetch('/api/test-allstar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ roomId: currentRoomId, slotId: slotId, points: document.getElementById('as-manual-pts').value })
+  });
+}
+
+
+async function fetchAvatar(slotId) {
+    const nameInput = document.getElementById('as-name-' + slotId);
+    const picInput = document.getElementById('as-pic-' + slotId);
+    let val = nameInput.value.trim();
+    if (!val) return;
+    
+    // Parse URL if pasted directly
+    if (val.includes('tiktok.com/')) {
+        const match = val.match(/@([a-zA-Z0-9_.-]+)/);
+        if (match) {
+            val = match[1];
+            nameInput.value = val; // update field to just username
+        }
+    }
+    
+    // Check if pic is empty, if empty try to fetch
+    if (!picInput.value) {
+        picInput.value = "Yükleniyor...";
+        try {
+            const res = await fetch('/api/get-avatar/' + val);
+            const data = await res.json();
+            if (data.success && data.avatar) {
+                picInput.value = data.avatar;
+            } else {
+                picInput.value = "";
+            }
+        } catch(e) {
+            picInput.value = "";
+        }
+    }
+}
+
+
+
+// ROULETTE LOGIC
+function startRoulette() {
+  fetch("/api/roulette/start", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ roomId: currentRoomId, time: parseInt(document.getElementById("roulette-time-input").value) || 45 })
+  }).then(r => r.json()).then(data => {
+    if (data.success) alert("Çekiliş Başlatıldı! OBS ekranına bakın.");
+  });
+}
+
+function copyRouletteLink() {
+  const url = window.location.origin + "/roulette-overlay.html?room=" + currentRoomId;
+  navigator.clipboard.writeText(url).then(() => {
+    alert("Çekiliş ekran linki kopyalandı!\n" + url);
+  });
+}
+
+function testRouletteVote() {
+  fetch("/api/test/trigger", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ roomId: currentRoomId, type: "roulette" })
+  }).then(r => r.json()).then(data => {
+    if (data.success) console.log("Sahte oy gönderildi");
+  });
+}
+
+// Update the roulette link input automatically when page loads
+document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(() => {
+        const linkInput = document.getElementById("roulette-obs-link");
+        if(linkInput) {
+            linkInput.value = window.location.origin + "/roulette-overlay.html?room=" + currentRoomId;
+        }
+    }, 500);
+});
+
+
+// F9 Tuş Ataması (Oylama Başlat/Durdur)
+document.addEventListener("keydown", (e) => {
+    if (e.key === "F9") {
+        e.preventDefault();
+        const startBtn = document.getElementById("btn-start-voting");
+        const stopBtn = document.getElementById("btn-stop-voting");
+        
+        if (startBtn && !startBtn.disabled) {
+            startVoting();
+        } else if (stopBtn && !stopBtn.disabled) {
+            stopVoting();
+        }
+    }
+});

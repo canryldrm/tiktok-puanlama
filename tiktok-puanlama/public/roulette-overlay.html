@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat Çekiliş ve Oylama</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: 'Press Start 2P', cursive;
+      overflow: hidden;
+      color: white;
+    }
+    
+    .container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* SPINNING PHASE */
+    #spinning-phase {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+    .title-spin {
+      color: #ffde00;
+      font-size: 40px;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 0 4px 10px rgba(0,0,0,0.5);
+    }
+    .slot-machine {
+      width: 80%;
+      height: 200px;
+      background: rgba(0, 0, 0, 0.7);
+      border: 4px solid #fff;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+    .target-box {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 150px;
+      height: 150px;
+      border: 6px solid #10b981;
+      z-index: 10;
+      box-shadow: 0 0 20px #10b981, inset 0 0 20px #10b981;
+      pointer-events: none;
+    }
+    .target-box::before, .target-box::after {
+      content: '';
+      position: absolute;
+      border: 15px solid transparent;
+      z-index: 11;
+    }
+    .target-box::before {
+      top: -35px; left: 50%; transform: translateX(-50%);
+      border-top-color: #10b981;
+    }
+    .target-box::after {
+      bottom: -35px; left: 50%; transform: translateX(-50%);
+      border-bottom-color: #10b981;
+    }
+    
+    .strip {
+      display: flex;
+      gap: 15px;
+      height: 150px;
+      position: absolute;
+      left: 50%;
+      transition: transform 5s cubic-bezier(0.1, 0.7, 0.1, 1);
+    }
+    .strip-item {
+      width: 150px;
+      height: 150px;
+      border: 3px solid #ffde00;
+      box-sizing: border-box;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .strip-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* RATING PHASE */
+    #rating-phase {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      width: 100%;
+    }
+    .top-info {
+      margin-bottom: 20px;
+    }
+    .chat-talking {
+      font-size: 20px;
+      color: #fff;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 0 #000;
+    }
+    .chat-talking span {
+      color: #ef4444;
+    }
+    .average-score {
+      font-size: 80px;
+      color: #ffde00;
+      text-shadow: 4px 4px 0 #000, 0 0 20px rgba(255, 222, 0, 0.5);
+      margin-bottom: 30px;
+    }
+    
+    .big-photo-frame {
+      width: 350px;
+      height: 350px;
+      border: 10px solid #ffde00;
+      box-shadow: 0 0 40px rgba(255, 222, 0, 0.6), inset 0 0 20px rgba(0,0,0,0.8);
+      position: relative;
+      background: #000;
+    }
+    .big-photo-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .bottom-info {
+      margin-top: 30px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      background: rgba(0,0,0,0.8);
+      padding: 15px 30px;
+      border: 4px solid #333;
+    }
+    .timer {
+      font-size: 40px;
+      color: #10b981;
+      text-shadow: 2px 2px 0 #000;
+    }
+    .username-display {
+      font-size: 24px;
+      color: #fff;
+    }
+    
+    .vote-popup {
+      position: absolute;
+      font-size: 30px;
+      color: #fff;
+      font-weight: bold;
+      text-shadow: 2px 2px 0 #000, 0 0 10px rgba(255,255,255,0.8);
+      pointer-events: none;
+      animation: floatUp 1.5s ease-out forwards;
+      z-index: 50;
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(0.5); opacity: 0; }
+      20% { transform: translateY(-20px) scale(1.2); opacity: 1; }
+      100% { transform: translateY(-100px) scale(1); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <!-- AUDIO FILES -->
+  <audio id="sound-score1" src="sounds/score1.wav" preload="auto"></audio>
+  <audio id="sound-score2" src="sounds/score2.wav" preload="auto"></audio>
+  <audio id="sound-fail" src="sounds/fail.mp3" preload="auto"></audio>
+
+  <div class="container">
+    
+    <!-- SPINNING PHASE UI -->
+    <div id="spinning-phase">
+      <div class="title-spin">ÇEKİLİŞ</div>
+      <div class="slot-machine">
+        <div class="target-box"></div>
+        <div class="strip" id="slot-strip">
+          <!-- Strip items injected via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- RATING PHASE UI -->
+    <div id="rating-phase">
+      <div class="top-info">
+        <div class="chat-talking">Chat konuşuyor - <span id="vote-count">0</span> oy</div>
+        <div class="average-score" id="average-score">0.0</div>
+      </div>
+      
+      <div class="big-photo-frame">
+        <img id="winner-photo" src="" alt="">
+      </div>
+      
+      <div class="bottom-info">
+        <div class="timer" id="rating-timer">45</div>
+        <div class="username-display" id="winner-name">Kullanici</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomId = urlParams.get('room');
+    if (!roomId) document.body.innerHTML = '<h1 style="color:white;text-align:center;">Hata: Room ID eksik!</h1>';
+
+    const socket = io();
+    socket.emit('joinRoom', roomId);
+
+    let currentState = null;
+    
+    socket.on('rouletteSpin', (data) => {
+      // data = { winner: {username, profilePic}, fillerProfiles: [...] }
+      document.getElementById('rating-phase').style.display = 'none';
+      document.getElementById('spinning-phase').style.display = 'flex';
+      
+      const strip = document.getElementById('slot-strip');
+      strip.style.transition = 'none';
+      strip.style.transform = 'translateX(0px)';
+      
+      // Build strip HTML
+      let html = '';
+      const itemWidth = 165; // 150px + 15px gap
+      
+      // Add filler before, the winner at index 40, and filler after
+      for(let i = 0; i < 50; i++) {
+        let pic = data.fillerProfiles[i % data.fillerProfiles.length] || 'https://picsum.photos/150';
+        if (i === 40) pic = data.winner.profilePic; // Winner placed exactly at index 40
+        
+        html += `<div class="strip-item"><img src="${pic}"></div>`;
+      }
+      strip.innerHTML = html;
+      
+      // Force reflow
+      void strip.offsetWidth;
+      
+      // Animate: Move so that item 40 is at the center (left: 50%)
+      // Center of item 40 means we shift left by (40 * itemWidth) + (150 / 2)
+      const shift = (40 * itemWidth) + (150 / 2);
+      strip.style.transition = 'transform 5s cubic-bezier(0.1, 0.7, 0.1, 1)';
+      strip.style.transform = `translateX(-${shift}px)`;
+    });
+
+    let lastPhase = 'idle';
+    socket.on('rouletteUpdate', (state) => {
+      if (state.phase === 'finished' && lastPhase === 'rating') {
+          try {
+              if (state.average < 5) {
+                  const audioFail = document.getElementById('sound-fail');
+                  if (audioFail) { audioFail.volume = 0.6; audioFail.play().catch(e => console.log(e)); }
+              } else {
+                  const audioScore2 = document.getElementById('sound-score2');
+                  if (audioScore2) { audioScore2.volume = 0.6; audioScore2.play().catch(e => console.log(e)); }
+              }
+          } catch(e) {}
+      }
+      lastPhase = state.phase;
+      currentState = state;
+      
+      if (state.phase === 'rating') {
+        document.getElementById('spinning-phase').style.display = 'none';
+        document.getElementById('rating-phase').style.display = 'flex';
+        
+        document.getElementById('winner-photo').src = state.winner.profilePic;
+        document.getElementById('winner-name').innerText = state.winner.username;
+        document.getElementById('vote-count').innerText = state.totalVotes;
+        document.getElementById('average-score').innerText = state.average.toFixed(1);
+        document.getElementById('rating-timer').innerText = state.timer;
+      } 
+      else if (state.phase === 'finished') {
+        // Keep showing the final score, maybe turn timer red or text "BİTTİ"
+        document.getElementById('rating-timer').innerText = "0";
+        document.getElementById('rating-timer').style.color = "#ef4444";
+      }
+      else if (state.phase === 'idle') {
+        document.getElementById('spinning-phase').style.display = 'none';
+        document.getElementById('rating-phase').style.display = 'none';
+      }
+    });
+
+    // Animate individual votes
+    socket.on('rouletteVote', (data) => {
+      // data = { score, username, profilePic }
+      createVotePopup(data.score, data.profilePic);
+    });
+
+    function createVotePopup(score, profilePic) {
+      // Play short retro sound for every vote
+      const audioScore1 = document.getElementById('sound-score1');
+      try {
+         const clone = audioScore1.cloneNode();
+         clone.volume = 0.5;
+         clone.play().catch(e => console.log(e));
+      } catch(e) {}
+
+      const container = document.getElementById('rating-phase');
+      if (container.style.display === 'none') return;
+      
+      const popup = document.createElement('div');
+      popup.className = 'vote-popup';
+      popup.style.display = 'flex';
+      popup.style.alignItems = 'center';
+      popup.style.gap = '8px';
+      
+      const imgHtml = profilePic ? `<img src="${profilePic}" style="width:35px;height:35px;border-radius:50%;border:2px solid #fff;object-fit:cover;">` : '';
+      popup.innerHTML = `${imgHtml}<span class="score-text">${score}</span>`;
+      
+      // Random position around the center photo
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 250 + Math.random() * 100;
+      const x = Math.cos(angle) * radius;
+      const y = Math.sin(angle) * radius;
+      
+      popup.style.left = `calc(50% + ${x}px)`;
+      popup.style.top = `calc(50% + ${y}px)`;
+      
+      // Color coding
+      const scoreSpan = popup.querySelector('.score-text');
+      if (score >= 8) scoreSpan.style.color = '#10b981';
+      else if (score <= 4) scoreSpan.style.color = '#ef4444';
+      else scoreSpan.style.color = '#ffde00';
+      
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 1500);
+    }
+  </script>
+</body>
+</html>

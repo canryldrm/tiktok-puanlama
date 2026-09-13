@@ -9,425 +9,534 @@
 </head>
 <body>
 <button onclick="fetch('/api/logout',{method:'POST'}).then(()=>location.href='/login.html')" style="position:fixed;top:14px;right:20px;z-index:9000;background:rgba(255,65,108,0.8);border:none;color:#fff;padding:8px 16px;border-radius:8px;font-family:Poppins,sans-serif;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.5px;">🚪 Çıkış Yap</button>
-<div style="width:96%;max-width:1400px;margin:0 auto;padding:20px 0;">
-<header>
-      <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 5px;">
-        <img src="logo.png" alt="Logo" style="height: 60px; object-fit: contain;">
-        <h1 style="margin: 0;">Selibon Medya Overlay</h1>
-      </div>
-      <p>Kontrol Paneli</p>
-    </header>
-    
-  <div style=""><div class="container">
-    
 
-    <!-- TIKTOK CONNECTION -->`n      <section class="card" style="text-align:center;">
-      <h2>📡 TikTok Bağlantısı</h2>
-      <div class="status-bar" style="justify-content:center;">
-        <span id="connection-dot" class="status-dot disconnected"></span>
-        <span id="connection-text">Bağlı Değil</span>
-      </div>
-      <div class="input-group" style="justify-content:center;">
-        <input type="text" id="tiktok-username" placeholder="@kullaniciadi">
-        <button id="btn-connect" class="btn btn-primary" onclick="connectTikTok()">Bağlan</button>
-        <button id="btn-disconnect" class="btn btn-danger" onclick="disconnectTikTok()" disabled>Kopar</button>
-      </div>
-      <small class="help-text">Canlı yayın yapan hesabın kullanıcı adını girin. Yayın aktif olmalıdır.</small>
-    </section>
-
-    <!-- OBS OVERLAY LINK -->
-    <div class="grid-layout"><section class="card obs-card" style="grid-column: 1 / -1;">
-      <h2>🖥 OBS Overlay</h2>
-      <p>Bu URL'leri OBS'de 'Tarayıcı (Browser Source)' kaynağı olarak ekleyin. Arka planları otomatik şeffaftır.</p>
-<div class="obs-grid">
-      
-      <div class="copy-group">
-        <input type="text" id="overlay-url" readonly value="Yükleniyor...">
-        <button onclick="copyUrl('overlay-url', 'Oylama')"  class="btn btn-secondary">📋 Oylama Overlay Kopyala</button>
-      </div>
-
-      <div class="copy-group">
-        <input type="text" id="racon-overlay-url" readonly value="Yükleniyor...">
-        <button onclick="copyUrl('racon-overlay-url', 'Racon Sıralaması')"  class="btn btn-secondary">🎩 Racon Sıralaması Overlay Kopyala</button>
-      </div>
-
-      <div class="copy-group">
-        <input type="text" id="leaderboard-overlay-url" readonly value="Yükleniyor...">
-        <button onclick="copyUrl('leaderboard-overlay-url', 'Oylama Sıralaması')" class="btn btn-secondary">🏆 Oylama Sıralaması Overlay Kopyala</button>
-      </div>
-
-      <div class="copy-group">
-        <input type="text" id="likes-overlay-url" readonly value="Yükleniyor...">
-        <button onclick="copyUrl('likes-overlay-url', 'Beğeni Sıralaması')" class="btn btn-secondary">❤️ Beğeni Sıralaması Overlay Kopyala</button>
-      </div>
-
-
-
-      <div class="copy-group">
-        <input type="text" id="follower-overlay-url" readonly value="Yükleniyor...">
-        <button onclick="copyUrl('follower-overlay-url', 'Son Takipçi')" class="btn btn-secondary">🔔 Son Takipçi Overlay Kopyala</button>
-      </div>
-
-      <div class="copy-group">
-        <input type="text" id="win-overlay-url" readonly value="Yükleniyor...">
-        <button onclick="copyUrl('win-overlay-url', 'Win Sayacı')" class="btn btn-secondary">🏆 Win Sayacı Overlay Kopyala</button>
-      </div>
-
-      <div class="copy-group">
-        <input type="text" id="mekan-overlay-url" readonly value="Yükleniyor...">
-        <button onclick="copyUrl('mekan-overlay-url', 'Mekan Sahibi')" class="btn btn-secondary">💎 Mekan Sahibi Overlay Kopyala</button>
-      </div>
-
-      <div class="copy-group">
-        <input type="text" id="raconkrali-overlay-url" readonly value="Yükleniyor...">
-        <button onclick="copyUrl('raconkrali-overlay-url', 'Racon Kralı')" class="btn btn-secondary">👑 Racon Kralı Overlay Kopyala</button>
-      </div>
-      
-            <div class="copy-group">
-        <input type="text" id="alert-overlay-url" readonly value="Yükleniyor...">
-        <button onclick="copyUrl('alert-overlay-url', 'Büyük Hediye Alarmı')" class="btn btn-secondary">🚨 Büyük Hediye Alarmı Kopyala</button>
-      </div>
-      <div class="copy-group">
-        <input type="text" id="goal-overlay-url" readonly value="Yükleniyor...">
-        <button onclick="copyUrl('goal-overlay-url', 'Günlük Hedef')" class="btn btn-secondary">🎯 Günlük Hedef Kopyala</button>
-      </div>
-      <div class="copy-group">
-        <input type="text" id="timer-overlay-url" readonly value="Yükleniyor...">
-        <button onclick="copyUrl('timer-overlay-url', 'Yayın Süresi')" class="btn btn-secondary">⏱️ Yayın Süresi Kopyala</button>
-      </div>
-      </div><div class="obs-tips">
-        <small>💡 Önerilen çözünürlük: <strong>1920 × 1080</strong></small>
-      </div>
-    </section>
-
-    <!-- RACON GIFT SETTING -->
-    <section class="card">
-      <h2>🎩 Racon Ayarları</h2>
-      <div class="input-group" style="justify-content:center;">
-        <label style="margin-right:10px;">Hediye:</label>
-        <select id="racon-gift-select" onchange="updateRaconGiftInput()" style="flex:1;">
-           <option value="Şapka & Bıyık" selected>Şapka & Bıyık</option>
-           <option value="custom">-- Diğer (Elle Yaz) --</option>
-        </select>
-        <input type="text" id="racon-gift-name" value="Şapka & Bıyık" placeholder="Hediye Adı" style="display:none; flex:1;">
-      </div>
-        <div class="form-group" style="margin-top: 15px;">
-          <label for="racon-sort-type">Racon Sıralaması (Ekranda):</label>
-          <select id="racon-sort-type" class="form-control" onchange="updateRaconSettings()">
-            <option value="coins" selected>Hediyeye Göre (En Fazla Jeton)</option>
-            <option value="newest">Zamana Göre (En Yeniler)</option>
-          </select>
-        </div>
-      <button class="btn btn-gold" onclick="saveRaconSettings()" style="margin-top: 10px; width: 100%;">Ayarları Kaydet</button>
-      <small class="help-text">Seçtiğiniz hediyeyi atanlar otomatik 10 puan (Racon) alır ve ekranda belirir.</small>
-      
-      <div style="margin-top: 20px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px;">
-        <h4 style="margin:0 0 10px 0; color:#00ff88; font-size:14px;">🎁 Bilinen / Canlı Yakalanan Hediyeler</h4>
-        <small class="help-text">Yayında bir hediye atıldığında burada belirir. Resmine tıklayarak Racon hediyesi yapabilirsin!</small>
-        <div id="known-gifts-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; max-height: 200px; overflow-y: auto;">
-            <!-- Hediyeler buraya gelecek -->
-        </div>
-      </div>
-    </section>
-
-    <!-- VOTING CONTROL -->
-    <section class="card">
-      <h2>⏱ Oylama Kontrolü</h2>
-      <div class="input-group" style="margin-bottom: 15px;">
-        <label for="voting-duration" style="align-self: center; font-weight: bold; margin-right: 10px;">Süre (Saniye):</label>
-        <input type="number" id="voting-duration" value="30" min="5" max="600" style="max-width:100px;">
-      </div>
-      <div class="button-group">
-        <button id="btn-start-voting" class="btn btn-primary btn-large" onclick="startVoting()">▶ Oylamayı Başlat</button>
-        <button id="btn-stop-voting" class="btn btn-danger btn-large" onclick="stopVoting()" disabled>⏹ Oylamayı Durdur</button>
-      </div>
-    </section>
-
-
-
-
-
-    <!-- RACON ENTRY -->
-    <section class="card">
-      <h2>🎩 Manuel Racon Girişi <span class="badge">Yedek</span></h2>
-      <div class="input-group" style="justify-content:center;">
-        <input type="text" id="racon-username" placeholder="Kullanıcı adı" autocomplete="off">
-        <input type="number" id="racon-coins" placeholder="Jeton" min="1" style="max-width:120px;">
-        <button class="btn btn-gold" onclick="addRacon()">🎩 Racon</button>
-      </div>
-    </section>
-
-    <!-- QUEUE MANAGEMENT -->
-    <section class="card">
-      <h2>📋 Sıra Yönetimi</h2>
-      <div class="input-group" style="justify-content:center;">
-        <input type="text" id="queue-name" placeholder="Eklenecek isim" autocomplete="off">
-        <button class="btn btn-info" onclick="addToQueue()">Ekle</button>
-      </div>
-      <div id="queue-list" class="queue-container"></div>
-      <button class="btn btn-info btn-full" onclick="nextInQueue()">⏭ Sıradakine Geç</button>
-    </section>
-
-    <div class="grid-2-col">
-      <!-- VOTES TABLE -->
-      <section class="card">
-        <h2>🗳 Verilen Oylar</h2>
-        <div class="table-container">
-          <table id="votes-table">
-            <thead><tr><th>Kullanıcı</th><th>Puan</th><th>Zaman</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- RACONS TABLE -->
-      <section class="card">
-        <h2>🎩 Raconlar</h2>
-        <div class="table-container">
-          <table id="racons-table">
-            <thead><tr><th>Kullanıcı</th><th>Jeton</th><th>Zaman</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </section>
+<div class="main-layout">
+  <!-- SIDEBAR (TABS) -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <img src="logo.png" alt="Logo" style="width: 100%; max-width: 180px; display: block; margin: 0 auto -20px auto; object-fit: contain; transform: scale(1.2);">
+      <h2 style="margin-top: 0; font-size: 1.2rem; position: relative; z-index: 2;">Selibon Paneli</h2>
     </div>
+    <ul class="tab-list">
+      <li class="tab-btn active" onclick="switchTab('tab-genel')">🔌 Bağlantı & Genel</li>
+      <li class="tab-btn" onclick="switchTab('tab-oylama')">🎮 Oylama & VS</li>
+      <li class="tab-btn" onclick="switchTab('tab-allstar')">🏆 Yarışma (All-Star)</li>
+      <li class="tab-btn" onclick="switchTab('tab-racon')">🎩 Racon & Mekan S.</li>
+      <li class="tab-btn" onclick="switchTab('tab-vip')">🏆 Sıralamalar</li>
+      <li class="tab-btn" onclick="switchTab('tab-bildirimler')">🔔 Bildirimler & Hedef</li>
+      <li class="tab-btn" onclick="switchTab('tab-ayarlar')">🎨 Tema & Testler</li>
+      <li class="tab-btn" onclick="switchTab('tab-kurulum')">📖 Kurulum & Rehber</li>
+    </ul>
+  </aside>
 
-    <!-- HISTORY -->
-    <section class="card">
-      <h2>📜 Geçmiş</h2>
-      <div class="table-container">
-        <table id="history-table">
-          <thead><tr><th>İsim</th><th>Ortalama</th><th>Toplam Oy</th></tr></thead>
-          <tbody></tbody>
-        </table>
+  <!-- CONTENT AREA -->
+  <div class="content-area">
+    <div class="container">
+
+      <!-- TAB: GENEL -->
+      <div id="tab-genel" class="tab-content active">
+        <section class="card" style="text-align:center;">
+          <h2>📡 TikTok Bağlantısı</h2>
+          <div class="status-bar" style="justify-content:center;">
+            <span id="connection-dot" class="status-dot disconnected"></span>
+            <span id="connection-text">Bağlı Değil</span>
+          </div>
+          <div class="input-group" style="justify-content:center;">
+            <input type="text" id="tiktok-username" placeholder="@kullaniciadi">
+            <button id="btn-connect" class="btn btn-primary" onclick="connectTikTok()">Bağlan</button>
+            <button id="btn-disconnect" class="btn btn-danger" onclick="disconnectTikTok()" disabled>Kopar</button>
+          </div>
+          <small class="help-text">Canlı yayın yapan hesabın kullanıcı adını girin. Yayın aktif olmalıdır.</small>
+        </section>
         
-    </section>
 
-    <!-- WIN CONTROLS -->
-    <section class="card" style="border: 2px solid #FFD700; text-align: center;">
-      <h2 style="color: #FFD700;">🏆 Win (Kazanma) Sayacı</h2>
-      <p class="help-text">Yayındaki güncel Win serinizi ve hedefinizi buradan yönetebilirsiniz.</p>
+        <section class="card" style="margin-top: 25px; border-top: 4px solid #ffd700; background: rgba(255, 215, 0, 0.03);">
+          <div style="display:flex; align-items:center; justify-content: space-between; margin-bottom: 20px;">
+            <div style="display:flex; align-items:center; gap: 15px;">
+              <img src="logo.png" style="width:60px; object-fit:contain;">
+              <div>
+                <h3 style="margin:0; color:#ffd700; font-size:18px;">Üyelik Avantajları</h3>
+                <p style="margin:0; font-size:13px; color:#a1a1aa;">Selibon Medya Ayrıcalıkları</p>
+              </div>
+            </div>
+            <a href="https://www.selibonmedya.com.tr/referral/ywt5K1qzOH2O?utm_source=referral_program" target="_blank" style="background:#ffd700; color:#111; padding:8px 20px; border-radius:6px; text-decoration:none; font-weight:700; font-size:14px; box-shadow: 0 4px 10px rgba(255,215,0,0.2);">✨ Başvur</a>
+          </div>
+          
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;">
+            
+            <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border-left: 3px solid #3b82f6;">
+              <h4 style="color:#3b82f6; margin:0 0 8px 0; font-size:14px;">💎 SeliPay Puan Sistemi</h4>
+              <p style="color:#cbd5e1; font-size:13px; margin:0; line-height:1.5;">Ajansa kattığın değer kadar SeliPay puanı biriktirirsin. Bu puanlarını nakde çevirebilir, yayın ekipmanları, izlenme/takipçi paketleri ve CANLI yayın hediyeleri için kullanabilir; dilersen online alışverişler yapabilirsin. Sektörün en büyük payı garantili.</p>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border-left: 3px solid #10b981;">
+              <h4 style="color:#10b981; margin:0 0 8px 0; font-size:14px;">📱 Mobil Uygulama</h4>
+              <p style="color:#cbd5e1; font-size:13px; margin:0; line-height:1.5;">SeliPay puan takibi, ödüller, eğitimler ve yayın desteklerinin tamamı randevulu şekilde cebinde.</p>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border-left: 3px solid #f59e0b;">
+              <h4 style="color:#f59e0b; margin:0 0 8px 0; font-size:14px;">🎁 Her Ay 2 Adet Samsung Galaxy S24FE Çekilişi</h4>
+              <p style="color:#cbd5e1; font-size:13px; margin:0; line-height:1.5;">60 saat yayın açarak ya da 100K elmas yayın hediyesi toplayarak her ay çekilişe katılma şansın var.</p>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border-left: 3px solid #ef4444;">
+              <h4 style="color:#ef4444; margin:0 0 8px 0; font-size:14px;">🏆 Aylık Liderlik Sıralaması Ödülleri</h4>
+              <p style="color:#cbd5e1; font-size:13px; margin:0; line-height:1.5;">Her ay performansına göre artan ekstra SeliPay ödülleri kazan.</p>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border-left: 3px solid #8b5cf6;">
+              <h4 style="color:#8b5cf6; margin:0 0 8px 0; font-size:14px;">👑 Platin Üye | SeliPay ödülleri</h4>
+              <p style="color:#cbd5e1; font-size:13px; margin:0; line-height:1.5;">Bir ay içinde 100 saat+ CANLI yayın ve 2M elmas sınırını geç, bizden Tiktok gelirlerine ek 100.000 TL ödül kazan.</p>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border-left: 3px solid #06b6d4;">
+              <h4 style="color:#06b6d4; margin:0 0 8px 0; font-size:14px;">🤝 Referans Ödülleri</h4>
+              <p style="color:#cbd5e1; font-size:13px; margin:0; line-height:1.5;">Getirdiğin her yeni üye için kişi başı 5.000 TL SeliPay ödülü kazan.</p>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border-left: 3px solid #ec4899;">
+              <h4 style="color:#ec4899; margin:0 0 8px 0; font-size:14px;">🕊️ İstediğin Zaman Ayrılma Özgürlüğü</h4>
+              <p style="color:#cbd5e1; font-size:13px; margin:0; line-height:1.5;">Taahhüt yok, ceza yok, bahane yok. İstediğin an, aynı gün içerisinde koşulsuz şartsız ayrılabilirsin.</p>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border-left: 3px solid #6366f1;">
+              <h4 style="color:#6366f1; margin:0 0 8px 0; font-size:14px;">☁️ Tamamen Özgürsün</h4>
+              <p style="color:#cbd5e1; font-size:13px; margin:0; line-height:1.5;">Hiç kimse sana zorla görev vermez. Hiçbir şey zorunlu değil.</p>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border-left: 3px solid #14b8a6;">
+              <h4 style="color:#14b8a6; margin:0 0 8px 0; font-size:14px;">🛡️ Haksız Ban ve İhlallerde Destek</h4>
+              <p style="color:#cbd5e1; font-size:13px; margin:0; line-height:1.5;">CANLI Yayınların haksız yere banlandığında, ekibimiz senin adına TikTok saha ekibi ile beraber itiraz sürecini yönetir ve hesabına en kısa sürede erişimini geri kazanman için yanında olur.</p>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border-left: 3px solid #f43f5e;">
+              <h4 style="color:#f43f5e; margin:0 0 8px 0; font-size:14px;">👤 Bireysel Yönetici Desteği</h4>
+              <p style="color:#cbd5e1; font-size:13px; margin:0; line-height:1.5;">Doğrudan iletişim kurabildiğin bir yöneticiyle bire bir çalış.</p>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border-left: 3px solid #eab308;">
+              <h4 style="color:#eab308; margin:0 0 8px 0; font-size:14px;">⚖️ Gelir Paylaşımlı Adil Yönetim</h4>
+              <p style="color:#cbd5e1; font-size:13px; margin:0; line-height:1.5;">Ne kadar katkı sağlarsan, o kadar kazanırsın. Burada herkes emeğinin karşılığını adil biçimde alır.</p>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border-left: 3px solid #84cc16;">
+              <h4 style="color:#84cc16; margin:0 0 8px 0; font-size:14px;">🎮 Oyun Yayıncılarına Özel Anlaşmalar</h4>
+              <p style="color:#cbd5e1; font-size:13px; margin:0; line-height:1.5;">Tikfinity, APiq, TikTakGames, 560Game, Streamac gibi firmalarla iş birlikleri sayesinde oyun yayıncılığını bir üst seviyeye taşıma şansı. Tüm oyun kurulumları ücretsiz yapılmaktadır.</p>
+            </div>
+
+
+
+          </div>
+        </section>
+
+
+      </div>
+
+      <!-- TAB: OYLAMA -->
       
-      <div style="display: flex; gap: 10px; align-items: center; justify-content: center; margin-top: 10px;">
-        <label>Hedef Win:</label>
-        <input type="number" id="win-target-input" value="10" min="1" style="width: 70px;">
-        <button class="btn btn-primary" onclick="setTargetWin()">Ayarla</button>
-      </div>
+        <!-- TAB: ALL STAR -->
+        <div id="tab-allstar" class="tab-content">
+          <section class="card obs-card">
+            <div class="copy-group" style="background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); padding: 15px; border-radius: 8px;">
+              <input type="text" id="allstar-overlay-url" readonly value="Yükleniyor..." style="flex:1;">
+              <button onclick="copyUrl('allstar-overlay-url', 'All-Star')" class="btn btn-gold">📺 All-Star Overlay Kopyala</button>
+            </div>
+            <p style="margin-top:15px; font-size:13px; color:#a1a1aa;">OBS Önerilen Çözünürlük: <strong>1920x1080</strong></p>
+          </section>
 
-              <div style="margin-bottom: 15px; text-align: center;">
-          <input type="text" id="win-custom-text-input" placeholder="Üst Yazı (örn: -20 win ağda)" style="width: 80%; padding: 10px; text-align: center; background: rgba(0,0,0,0.3); color: #fff; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; font-family: 'Poppins', sans-serif;" onchange="setWinCustomText()">
+          <section class="card">
+            <h2 style="color: #FFD700;">🏆 All-Star Yarışma Ayarları</h2>
+            <p style="color:#a1a1aa; font-size:14px; margin-bottom: 20px;">En fazla 4 kişiye kadar yarışmacı ekleyin. Hediye belirleyebilir veya yorumdan (1, 2, 3, 4) oy toplayabilirsiniz.</p>
+            
+            <div style="display:flex; gap:15px; margin-bottom: 25px; flex-wrap: wrap;">
+              <div style="flex:1; min-width: 0; overflow: hidden;  background: rgba(0,0,0,0.3); padding:15px; border-radius: 8px; border-top: 3px solid #3b82f6;">
+                <h4 style="margin-top:0; color:#3b82f6;">Yarışmacı 1</h4>
+                <div class="form-group"><label>Kullanıcı Adı</label><input type="text" id="as-name-1" onblur="fetchAvatar(1)" class="form-control" placeholder="@username"></div>
+                <div class="form-group"><label>Fotoğraf URL</label><input type="text" id="as-pic-1" class="form-control" placeholder="http..."></div>
+                <div class="form-group"><label>Özel Hediye (Puan için)</label><select id="as-gift-1" class="form-control as-gift"><option value="">-- Sadece Yorum --</option></select></div>
+              </div>
+              
+              <div style="flex:1; min-width: 0; overflow: hidden;  background: rgba(0,0,0,0.3); padding:15px; border-radius: 8px; border-top: 3px solid #10b981;">
+                <h4 style="margin-top:0; color:#10b981;">Yarışmacı 2</h4>
+                <div class="form-group"><label>Kullanıcı Adı</label><input type="text" id="as-name-2" onblur="fetchAvatar(2)" class="form-control" placeholder="@username"></div>
+                <div class="form-group"><label>Fotoğraf URL</label><input type="text" id="as-pic-2" class="form-control" placeholder="http..."></div>
+                <div class="form-group"><label>Özel Hediye (Puan için)</label><select id="as-gift-2" class="form-control as-gift"><option value="">-- Sadece Yorum --</option></select></div>
+              </div>
+
+              <div style="flex:1; min-width: 0; overflow: hidden;  background: rgba(0,0,0,0.3); padding:15px; border-radius: 8px; border-top: 3px solid #f59e0b;">
+                <h4 style="margin-top:0; color:#f59e0b;">Yarışmacı 3</h4>
+                <div class="form-group"><label>Kullanıcı Adı</label><input type="text" id="as-name-3" onblur="fetchAvatar(3)" class="form-control" placeholder="@username"></div>
+                <div class="form-group"><label>Fotoğraf URL</label><input type="text" id="as-pic-3" class="form-control" placeholder="http..."></div>
+                <div class="form-group"><label>Özel Hediye (Puan için)</label><select id="as-gift-3" class="form-control as-gift"><option value="">-- Sadece Yorum --</option></select></div>
+              </div>
+
+              <div style="flex:1; min-width: 0; overflow: hidden;  background: rgba(0,0,0,0.3); padding:15px; border-radius: 8px; border-top: 3px solid #ef4444;">
+                <h4 style="margin-top:0; color:#ef4444;">Yarışmacı 4</h4>
+                <div class="form-group"><label>Kullanıcı Adı</label><input type="text" id="as-name-4" onblur="fetchAvatar(4)" class="form-control" placeholder="@username"></div>
+                <div class="form-group"><label>Fotoğraf URL</label><input type="text" id="as-pic-4" class="form-control" placeholder="http..."></div>
+                <div class="form-group"><label>Özel Hediye (Puan için)</label><select id="as-gift-4" class="form-control as-gift"><option value="">-- Sadece Yorum --</option></select></div>
+              </div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="saveAllStarSettings()" style="width:100%; margin-bottom: 20px;">Yarışmacı Bilgilerini Kaydet ve Overlay'e Gönder</button>
+
+            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+              <h4 style="margin-top:0; color:#fff;">✍️ Manuel Puan Ekle (Veya Test)</h4>
+              <div style="display:flex; gap: 10px; align-items:center;">
+                <input type="number" id="as-manual-pts" class="form-control" value="50" style="width: 80px;" title="Eklenecek Puan">
+                <button class="btn" style="flex:1; background: #3b82f6; color: white;" onclick="testAllStar(1)">1. Yarışmacı</button>
+                <button class="btn" style="flex:1; background: #10b981; color: white;" onclick="testAllStar(2)">2. Yarışmacı</button>
+                <button class="btn" style="flex:1; background: #f59e0b; color: white;" onclick="testAllStar(3)">3. Yarışmacı</button>
+                <button class="btn" style="flex:1; background: #ef4444; color: white;" onclick="testAllStar(4)">4. Yarışmacı</button>
+              </div>
+            </div>
+
+            
+            <hr style="border-color: rgba(255,255,255,0.1); margin: 25px 0;">
+            
+            <h3 style="color:#FFF;">⏱ Zamanlayıcı ve Maç Kontrolü</h3>
+            <div style="display:flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+              <div class="form-group" style="flex:1;">
+                <label>Maç Süresi (Saniye):</label>
+                <input type="number" id="as-time" class="form-control" value="300" placeholder="Örn: 300 (5 Dk)">
+              </div>
+              <button class="btn" style="background:#10b981; color:white; flex:1; margin-bottom:15px;" onclick="controlAllStar('start')">▶ Süreyi Başlat</button>
+              <button class="btn" style="background:#ef4444; color:white; flex:1; margin-bottom:15px;" onclick="controlAllStar('stop')">⏸ Durdur</button>
+              <button class="btn" style="background:#64748b; color:white; flex:1; margin-bottom:15px;" onclick="controlAllStar('reset')">🔄 Sıfırla (Skorlar Dahil)</button>
+            </div>
+          </section>
         </div>
-        <div style="display: flex; gap: 20px; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; margin-top: 15px;">
-        <button class="btn btn-danger" style="width: 50px; height: 50px; font-size: 24px;" onclick="updateWins('dec')">-</button>
-        <span id="panel-win-count" style="width: 100px; text-align: center; color: white; background: #222; padding: 5px; border-radius: 10px;">0 / 10</span>
-        <button class="btn btn-gold" style="width: 50px; height: 50px; font-size: 24px;" onclick="updateWins('inc')">+</button>
-      </div>
-    </section>
 
-        <!-- YENI ÖZELLİKLER -->
-    <section class="card">
-      <h2>🎯 Hedef ve Süre</h2>
-      <div style="margin-bottom: 20px;">
-        <label>Hedef Başlığı:</label>
-        <div style="display:flex; gap:10px; margin-bottom:5px;">
-          <input type="text" id="goal-title" placeholder="Örn: Motor İçin" style="flex:1;">
-          <input type="number" id="goal-target" placeholder="Hedef (Örn: 50000)" style="width:120px;">
-          <button class="btn btn-primary" onclick="updateGoal()">Ayarla</button>
-        </div>
-        <div style="display:flex; gap:10px;">
-          <button class="btn btn-secondary" onclick="addGoal(1000)">+1000 Jeton</button>
-          <button class="btn btn-secondary" onclick="addGoal(5000)">+5000 Jeton</button>
-          <button class="btn btn-danger" onclick="addGoal(-1000)">-1000 Jeton</button>
-        </div>
-      </div>
-      <div>
-        <label>Yayın Süresi:</label>
-        <div style="display:flex; gap:10px;">
-          <button class="btn btn-primary" onclick="timerAction('start')">Başlat</button>
-          <button class="btn btn-warning" onclick="timerAction('pause')">Durdur</button>
-          <button class="btn btn-danger" onclick="timerAction('reset')">Sıfırla</button>
-        </div>
-      </div>
-    </section>
-    <!-- VIP MANAGEMENT -->
-    <section class="card" style="border: 2px solid #FFD700;">
-      <h2 style="color: #FFD700;">💎 VIP Yönetimi</h2>
-      <p class="help-text">Mekan Sahibi ve Racon Kralı unvanlarını buradan manuel olarak belirleyebilirsiniz. (Boş bırakırsanız sistem en çok atanları otomatik seçer)</p>
-      
-      <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
-        <div class="input-group" style="justify-content:center;">
-          <label style="width: 120px; font-weight: bold;">Mekan Sahibi:</label>
-          <input type="text" id="vip-mekan-input" placeholder="İsim (Oto: En Çok Jeton)" autocomplete="off">
-          <input type="text" id="vip-mekan-text" placeholder="Alt Yazı (Örn: 50K Jeton)" autocomplete="off" style="width:140px;">
-          <button class="btn btn-primary" onclick="setVipOverride('mekan', 'vip-mekan-input', 'vip-mekan-text')">Ayarla</button>
-          <button class="btn btn-secondary" onclick="clearVipOverride('mekan', 'vip-mekan-input', 'vip-mekan-text')">Oto</button>
-        </div>
-        
-        <div class="input-group" style="justify-content:center;">
-          <label style="width: 120px; font-weight: bold;">Racon Kralı:</label>
-          <input type="text" id="vip-racon-input" placeholder="İsim (Oto: En çok Racon)" autocomplete="off">
-          <input type="text" id="vip-racon-text" placeholder="Alt Yazı (Örn: 50x Racon)" autocomplete="off" style="width:140px;">
-          <button class="btn btn-primary" onclick="setVipOverride('racon', 'vip-racon-input', 'vip-racon-text')">Ayarla</button>
-          <button class="btn btn-secondary" onclick="clearVipOverride('racon', 'vip-racon-input', 'vip-racon-text')">Oto</button>
-        </div>
-      </div>
-    </section>
+        <div id="tab-oylama" class="tab-content">
+        <section class="card obs-card">
+          <div class="copy-group" style="background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3); padding: 15px; border-radius: 8px;">
+            <input type="text" id="overlay-url" readonly value="Yükleniyor..." style="flex:1;">
+            <button onclick="copyUrl('overlay-url', 'Oylama')" class="btn btn-primary">📋 Oylama Overlay Linkini Kopyala</button>
+          </div>
+        </section>
 
-    <!-- THEME SETTINGS -->
-    <section class="card">
-      <h2>🎨 Tema ve Tasarım (Beta)</h2>
-      <p class="help-text">Overlay'lerin genel renk temasını buradan değiştirebilirsiniz.</p>
-      <div style="display: flex; gap: 10px; align-items: center; margin-top: 10px;">
-        <label>Ana Renk:</label>
-        <input type="color" id="theme-color-input" value="#FFD700" style="width: 50px; height: 35px; border: none; cursor: pointer; background: transparent;">
-        <button class="btn btn-primary" onclick="setThemeColor()">Rengi Uygula</button>
-      </div>
-    </section>
+        <section class="card">
+          <h2>⏱ Oylama Kontrolü</h2>
+          <div class="input-group" style="margin-bottom: 15px;">
+            <label for="voting-duration" style="align-self: center; font-weight: bold; margin-right: 10px;">Süre (Saniye):</label>
+            <input type="number" id="voting-duration" value="30" min="5" max="600" style="max-width:100px;">
+          </div>
+          <div class="button-group">
+            <button id="btn-start-voting" class="btn btn-primary btn-large" onclick="startVoting()">▶ Oylamayı Başlat</button>
+            <button id="btn-stop-voting" class="btn btn-danger btn-large" onclick="stopVoting()" disabled>⏹ Oylamayı Durdur</button>
+          </div>
+        </section>
 
-    <!-- TEST BÖLÜMÜ -->
-    <section class="card" style="border: 2px dashed #33b5e5;">
-      <div class="panel-section">
-        <h3 class="section-title">🧪 Test İşlemleri</h3>
-        <p style="font-size: 0.85rem; color: #aaa; margin-bottom: 10px;">Sistemi denemek için sahte etkileşimler gönderir.</p>
-        <div style="display: flex; gap:10px; flex-wrap:wrap;">
-          <button class="btn btn-warning" onclick="sendTestData('vote')">Test Yorum</button><button class="btn btn-warning" onclick="sendTestData('leaderboard')">Test Sıralama</button>
-          <button class="btn btn-warning" onclick="sendTestData('follow')">Test Takipçi</button>
-          <button class="btn btn-warning" onclick="sendTestData('racon')">Test Racon</button>
-          <button class="btn btn-warning" onclick="sendTestData('like')">Test Beğeni</button>
-          <button class="btn btn-warning" onclick="sendTestData('alert')">Test Büyük Hediye</button><button class="btn btn-warning" onclick="sendTestData('topgifter')">Test Mekan Sahibi</button>
-          <button class="btn btn-warning" onclick="sendTestData('leaderboard')">Test Sıralama</button>
-          <button class="btn btn-warning" onclick="sendTestData('racon'); sendTestData('topgifter');">Test VIP (Mekan & Racon)</button>
-        </div>
-      </div>
-      <small style="display:block; margin-top:10px; color:#aaa;">Not: Testleri bitirince en alttaki "Her Şeyi Sıfırla" butonuyla temizleyebilirsiniz.</small>
-    </section>
+        <section class="card" style="border: 2px solid #10b981; margin-top: 20px;">
+          <h2 style="color: #10b981;">🎰 İzleyici Çekilişi (Roulette)</h2>
+          <p class="help-text">
+            Yorum yapan, hediye atan veya beğeni yollayan aktif izleyiciler arasından rastgele birini seçer ve ekranda büyütür. Ardından chat 45 saniye boyunca 1-10 arası puan verir.
+          </p>
 
-    <!-- RESET -->
-    <section class="card" style="text-align:center;">
-      <button class="btn btn-danger" onclick="resetAll()">🗑 Her Şeyi Sıfırla</button>
-    </section>
-</div></div></div>
-  
-  <script>
-    if (window.location.protocol === 'file:') {
-      alert("UYARI: Sayfayı klasörden çift tıklayarak açtınız! Sistem bu şekilde çalışamaz.\n\nLütfen adres çubuğuna şunu yazın: http://localhost:3000/panel.html");
-      document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:50px;'>Lütfen tarayıcınıza http://localhost:3000/panel.html yazarak girin.</h1>";
-    }
-  </script>
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="panel.js?v=4"></script>
-</div><!-- OVERLAY REHBER MODAL -->
-<div id="guide-modal-backdrop">
-  <div id="guide-modal">
-    <button id="guide-modal-close" onclick="closeGuide()" title="Kapat">✕</button>
-    <h2 style="color:#ffd700;margin:0 0 4px 0;font-size:1.3rem;text-align:center;">📺 Overlay Kullanım Rehberi</h2>
-    <p style="color:rgba(255,255,255,0.4);font-size:0.75rem;text-align:center;margin:0 0 20px 0;">OBS'ye eklemeden önce okuyun — Her overlay için doğru boyutu kullanın</p>
-    <div style="display:flex;flex-direction:column;gap:10px;">
+          <div class="copy-group" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <input type="text" id="roulette-obs-link" readonly style="flex:1;">
+            <button class="btn btn-primary" onclick="copyRouletteLink()" style="background: #10b981;">📋 Çekiliş Overlay Kopyala</button>
+          </div>
 
-      <div style="background:rgba(0,212,255,0.08);border-radius:8px;padding:12px;border-left:3px solid #00d4ff;">
-        <h4 style="color:#00d4ff;margin:0 0 4px 0;font-size:0.9rem;">🎯 Oylama Overlay</h4>
-        <p style="color:#ccc;font-size:0.78rem;margin:0;line-height:1.5;">Gelen hediyeler puana çevrilir ve anlık sıralama ekranda belirir. En çok puan alan izleyiciler ilk 3'e girer. Oylama süresini panelden başlatıp durdurabilirsiniz. <b style="color:#00d4ff;">OBS: 1920×1080</b></p>
+          <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <input type="number" id="roulette-time-input" value="45" style="width: 80px; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #222; color: #fff; text-align: center; font-size: 16px;">
+            <button class="btn btn-green btn-large" onclick="startRoulette()" style="flex: 1; font-size: 18px; padding: 15px; margin: 0;">🎰 Çekilişi Başlat</button>
+          </div>
+          
+          <div style="margin-top:20px; padding-top:20px; border-top:1px solid #444; display: flex; gap: 10px;">
+            <button class="btn btn-secondary" onclick="startRoulette()">Sahte Çekiliş Başlat</button>
+            <button class="btn btn-secondary" onclick="testRouletteVote()">Sahte Oy Gönder</button>
+          </div>
+        </section>
+
+
+        <section class="card">
+          <h2>📋 Sıra Yönetimi</h2>
+          <div class="input-group" style="justify-content:center;">
+            <input type="text" id="queue-name" placeholder="Eklenecek isim" autocomplete="off">
+            <button class="btn btn-info" onclick="addToQueue()">Ekle</button>
+          </div>
+          <div id="queue-list" class="queue-container"></div>
+          <button class="btn btn-info btn-full" onclick="nextInQueue()">⏭ Sıradakine Geç</button>
+        </section>
+
+        <section class="card">
+          <h2>🗳 Verilen Oylar (Canlı)</h2>
+          <div class="table-container" style="max-height: 250px;">
+            <table id="votes-table">
+              <thead><tr><th>Kullanıcı</th><th>Puan</th><th>Zaman</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
       </div>
 
-      <div style="background:rgba(255,215,0,0.08);border-radius:8px;padding:12px;border-left:3px solid #ffd700;">
-        <h4 style="color:#ffd700;margin:0 0 4px 0;font-size:0.9rem;">👑 Racon Sıralaması</h4>
-        <p style="color:#ccc;font-size:0.78rem;margin:0;line-height:1.5;">Panelden seçtiğiniz özel racon hediyesini (örn: Şapka) gönderen izleyiciler bu ekranda sıralanır. Her hediye = 10 Racon puanı. <b style="color:#00d4ff;">OBS: 1920×1080</b></p>
+      <!-- TAB: RACON -->
+      <div id="tab-racon" class="tab-content">
+        <section class="card obs-card">
+          <div class="copy-group" style="background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+            <input type="text" id="racon-overlay-url" readonly value="Yükleniyor..." style="flex:1;">
+            <button onclick="copyUrl('racon-overlay-url', 'Racon Sıralaması')" class="btn btn-gold">🎩 Racon Overlay Kopyala</button>
+          </div>
+          <div class="copy-group" style="background: rgba(170,136,255,0.1); border: 1px solid rgba(170,136,255,0.3); padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+            <input type="text" id="mekan-overlay-url" readonly value="Yükleniyor..." style="flex:1;">
+            <button onclick="copyUrl('mekan-overlay-url', 'Mekan Sahibi')" style="background: #aa88ff; color: white;" class="btn">💎 Mekan Sahibi Overlay</button>
+          </div>
+            <div class="copy-group" style="background: rgba(255,153,0,0.1); border: 1px solid rgba(255,153,0,0.3); padding: 15px; border-radius: 8px;">
+            <input type="text" id="raconkrali-overlay-url" readonly value="Yükleniyor..." style="flex:1;">
+            <button onclick="copyUrl('raconkrali-overlay-url', 'Racon Kralı')" style="background: #ff9900; color: white;" class="btn">👑 Racon Kralı Overlay</button>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>🎩 Racon Ayarları</h2>
+          <div class="input-group" style="justify-content:center;">
+            <label style="margin-right:10px;">Hediye:</label>
+            <select id="racon-gift-select" onchange="updateRaconGiftInput()" style="flex:1;">
+               <option value="Şapka & Bıyık" selected>Şapka & Bıyık</option>
+               <option value="custom">-- Diğer (Elle Yaz) --</option>
+            </select>
+            <input type="text" id="racon-gift-name" value="Şapka & Bıyık" placeholder="Hediye Adı" style="display:none; flex:1;">
+          </div>
+          <div class="form-group" style="margin-top: 15px;">
+            <label for="racon-sort-type">Racon Sıralaması (Ekranda):</label>
+            <select id="racon-sort-type" class="form-control" onchange="updateRaconSettings()">
+              <option value="coins" selected>Hediyeye Göre (En Fazla Jeton)</option>
+              <option value="newest">Zamana Göre (En Yeniler)</option>
+            </select>
+          </div>
+          <button class="btn btn-gold" onclick="saveRaconSettings()" style="margin-top: 10px; width: 100%;">Ayarları Kaydet</button>
+          <small class="help-text">Seçtiğiniz hediyeyi atanlar otomatik 10 puan alır ve ekranda belirir.</small>
+          
+          <div style="margin-top: 20px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+            <h4 style="margin:0 0 10px 0; color:#00ff88; font-size:14px;">🎁 Bilinen / Canlı Yakalanan Hediyeler</h4>
+            <div id="known-gifts-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; max-height: 200px; overflow-y: auto;">
+                <!-- Hediyeler buraya gelecek -->
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>🎩 Manuel Racon Girişi <span class="badge">Yedek</span></h2>
+          <div class="input-group" style="justify-content:center;">
+            <input type="text" id="racon-username" placeholder="Kullanıcı adı" autocomplete="off">
+            <input type="number" id="racon-coins" placeholder="Jeton" min="1" style="max-width:120px;">
+            <button class="btn btn-gold" onclick="addRacon()">🎩 Racon Ekle</button>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>🎩 Atılan Raconlar</h2>
+          <div class="table-container" style="max-height: 250px;">
+            <table id="racons-table">
+              <thead><tr><th>Kullanıcı</th><th>Jeton</th><th>Zaman</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
       </div>
 
-      <div style="background:rgba(255,107,157,0.08);border-radius:8px;padding:12px;border-left:3px solid #ff6b9d;">
-        <h4 style="color:#ff6b9d;margin:0 0 4px 0;font-size:0.9rem;">❤️ Beğeni Sıralaması</h4>
-        <p style="color:#ccc;font-size:0.78rem;margin:0;line-height:1.5;">TikTok'ta ekrana çift tıklayarak beğeni gönderen izleyiciler bu listede sıralanır. En çok beğeni gönderen ilk 3 kişi görünür. <b style="color:#00d4ff;">OBS: 1920×1080</b></p>
+      <!-- TAB: VIP -->
+      <div id="tab-vip" class="tab-content">
+        <section class="card obs-card">
+          <div class="copy-group" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+            <input type="text" id="leaderboard-overlay-url" readonly value="Yükleniyor..." style="flex:1;">
+            <button onclick="copyUrl('leaderboard-overlay-url', 'Oylama Sıralaması')" class="btn btn-secondary">🏆 Oylama Sıralaması Overlay</button>
+          </div>
+            <div class="copy-group" style="background: rgba(255,107,157,0.1); border: 1px solid rgba(255,107,157,0.3); padding: 15px; border-radius: 8px;">
+            <input type="text" id="likes-overlay-url" readonly value="Yükleniyor..." style="flex:1;">
+            <button onclick="copyUrl('likes-overlay-url', 'Beğeni Sıralaması')" style="background: #ff6b9d; color: white;" class="btn">❤️ Beğeni Overlay Kopyala</button>
+          </div>
+          
+          
+        </section>
+
+        <section class="card" style="border: 2px solid #FFD700;">
+          <h2 style="color: #FFD700;">💎 VIP Yönetimi</h2>
+          <p class="help-text">Mekan Sahibi ve Racon Kralı unvanlarını buradan manuel olarak belirleyebilirsiniz. (Boş bırakırsanız sistem en çok atanları otomatik seçer)</p>
+          
+          <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
+            <div class="input-group" style="justify-content:center;">
+              <label style="width: 120px; font-weight: bold;">Mekan Sahibi:</label>
+              <input type="text" id="vip-mekan-input" placeholder="İsim (Oto: En Çok Jeton)" autocomplete="off">
+              <input type="text" id="vip-mekan-text" placeholder="Alt Yazı (Örn: 50K Jeton)" autocomplete="off" style="width:140px;">
+              <button class="btn btn-primary" onclick="setVipOverride('mekan', 'vip-mekan-input', 'vip-mekan-text')">Ayarla</button>
+              <button class="btn btn-secondary" onclick="clearVipOverride('mekan', 'vip-mekan-input', 'vip-mekan-text')">Oto</button>
+            </div>
+            
+            <div class="input-group" style="justify-content:center;">
+              <label style="width: 120px; font-weight: bold;">Racon Kralı:</label>
+              <input type="text" id="vip-racon-input" placeholder="İsim (Oto: En çok Racon)" autocomplete="off">
+              <input type="text" id="vip-racon-text" placeholder="Alt Yazı (Örn: 50x Racon)" autocomplete="off" style="width:140px;">
+              <button class="btn btn-primary" onclick="setVipOverride('racon', 'vip-racon-input', 'vip-racon-text')">Ayarla</button>
+              <button class="btn btn-secondary" onclick="clearVipOverride('racon', 'vip-racon-input', 'vip-racon-text')">Oto</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>📜 Günün İyileri Geçmişi</h2>
+          <div class="table-container">
+            <table id="history-table">
+              <thead><tr><th>İsim</th><th>Ortalama</th><th>Toplam Oy</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
       </div>
 
-      <div style="background:rgba(0,255,136,0.08);border-radius:8px;padding:12px;border-left:3px solid #00ff88;">
-        <h4 style="color:#00ff88;margin:0 0 4px 0;font-size:0.9rem;">👤 Son Takipçi</h4>
-        <p style="color:#ccc;font-size:0.78rem;margin:0;line-height:1.5;">Yayınınızı takip eden en son kişinin adı ve profil fotoğrafı şeffaf bir animasyonla birkaç saniyeliğine ekranda belirir ve kaybolur. <b style="color:#00d4ff;">OBS: 600×200</b></p>
+      <!-- TAB: BİLDİRİMLER -->
+      <div id="tab-bildirimler" class="tab-content">
+        <section class="card obs-card">
+          <div class="copy-group" style="background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+            <input type="text" id="follower-overlay-url" readonly value="Yükleniyor..." style="flex:1;">
+            <button onclick="copyUrl('follower-overlay-url', 'Son Takipçi')" style="background: #00ff88; color: black;" class="btn">🔔 Son Takipçi Overlay</button>
+          </div>
+          <div class="copy-group" style="background: rgba(255,68,68,0.1); border: 1px solid rgba(255,68,68,0.3); padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+            <input type="text" id="alert-overlay-url" readonly value="Yükleniyor..." style="flex:1;">
+            <button onclick="copyUrl('alert-overlay-url', 'Büyük Hediye Alarmı')" class="btn btn-danger">🚨 Büyük Hediye Alarmı</button>
+          </div>
+          <div class="copy-group" style="background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3); padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+            <input type="text" id="goal-overlay-url" readonly value="Yükleniyor..." style="flex:1;">
+            <button onclick="copyUrl('goal-overlay-url', 'Günlük Hedef')" class="btn btn-primary">🎯 Günlük Hedef Overlay</button>
+          </div>
+          <div class="copy-group" style="background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+            <input type="text" id="win-overlay-url" readonly value="Yükleniyor..." style="flex:1;">
+            <button onclick="copyUrl('win-overlay-url', 'Win Sayacı')" class="btn btn-gold">🏆 Win Sayacı Overlay</button>
+          </div>
+          <div class="copy-group" style="background: rgba(255,107,0,0.1); border: 1px solid rgba(255,107,0,0.3); padding: 15px; border-radius: 8px;">
+            <input type="text" id="timer-overlay-url" readonly value="Yükleniyor..." style="flex:1;">
+            <button onclick="copyUrl('timer-overlay-url', 'Yayın Süresi')" style="background: #ff6b00; color: white;" class="btn">⏱️ Yayın Süresi Overlay</button>
+          </div>
+        </section>
+
+        <!-- WIN CONTROLS -->
+        <section class="card" style="border: 2px solid #FFD700; text-align: center;">
+          <h2 style="color: #FFD700;">🏆 Win (Kazanma) Sayacı</h2>
+          <div style="display: flex; gap: 10px; align-items: center; justify-content: center; margin-top: 10px;">
+            <label>Hedef Win:</label>
+            <input type="number" id="win-target-input" value="10" min="1" style="width: 70px;">
+            <button class="btn btn-primary" onclick="setTargetWin()">Ayarla</button>
+          </div>
+          <div style="margin-top: 15px; text-align: center;">
+              <input type="text" id="win-custom-text-input" placeholder="Üst Yazı (örn: -20 win ağda)" style="width: 80%; padding: 10px; text-align: center; background: rgba(0,0,0,0.3); color: #fff; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;" onchange="setWinCustomText()">
+          </div>
+          <div style="display: flex; gap: 20px; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; margin-top: 15px;">
+            <button class="btn btn-danger" style="width: 50px; height: 50px; font-size: 24px;" onclick="updateWins('dec')">-</button>
+            <span id="panel-win-count" style="width: 100px; text-align: center; color: white; background: #222; padding: 5px; border-radius: 10px;">0 / 10</span>
+            <button class="btn btn-gold" style="width: 50px; height: 50px; font-size: 24px;" onclick="updateWins('inc')">+</button>
+          </div>
+        </section>
+
+        <!-- HEDEF VE SÜRE -->
+        <section class="card">
+          <h2>🎯 Günlük Hedef ve Süre</h2>
+          <div style="margin-bottom: 20px;">
+            <label>Hedef Başlığı:</label>
+            <div style="display:flex; gap:10px; margin-bottom:5px;">
+              <input type="text" id="goal-title" placeholder="Örn: Motor İçin" style="flex:1;">
+              <input type="number" id="goal-target" placeholder="Hedef (Örn: 50000)" style="width:120px;">
+              <button class="btn btn-primary" onclick="updateGoal()">Ayarla</button>
+            </div>
+            <div style="display:flex; gap:10px; justify-content: center; margin-top: 10px;">
+              <button class="btn btn-secondary" onclick="addGoal(1000)">+1000 Jeton</button>
+              <button class="btn btn-secondary" onclick="addGoal(5000)">+5000 Jeton</button>
+              <button class="btn btn-danger" onclick="addGoal(-1000)">-1000 Jeton</button>
+            </div>
+          </div>
+          <hr style="border-color: rgba(255,255,255,0.1); margin: 20px 0;">
+          <div>
+            <label>Yayın Süresi:</label>
+            <div style="display:flex; gap:10px; justify-content: center; margin-top: 10px;">
+              <button class="btn btn-primary" onclick="timerAction('start')">▶ Başlat</button>
+              <button class="btn btn-warning" onclick="timerAction('pause')">⏸ Durdur</button>
+              <button class="btn btn-danger" onclick="timerAction('reset')">⏹ Sıfırla</button>
+            </div>
+          </div>
+        </section>
       </div>
 
-      <div style="background:rgba(255,215,0,0.08);border-radius:8px;padding:12px;border-left:3px solid #ffd700;">
-        <h4 style="color:#ffd700;margin:0 0 4px 0;font-size:0.9rem;">🏆 Win (Kazanma) Sayacı</h4>
-        <p style="color:#ccc;font-size:0.78rem;margin:0;line-height:1.5;">PK maçlarında üst üste kazanılan el sayısını gösterir. Panelden hedef belirleyin, ardından + / − butonlarıyla seriyi güncelleyin. <b style="color:#00d4ff;">OBS: 400×120</b></p>
-      </div>
+      <!-- TAB: AYARLAR -->
+      <div id="tab-ayarlar" class="tab-content">
+        <section class="card">
+          <h2>🎨 Tema ve Tasarım (Beta)</h2>
+          <p class="help-text">Overlay'lerin genel renk temasını buradan değiştirebilirsiniz.</p>
+          <div style="display: flex; gap: 10px; align-items: center; margin-top: 10px;">
+            <label>Ana Renk:</label>
+            <input type="color" id="theme-color-input" value="#FFD700" style="width: 50px; height: 35px; border: none; cursor: pointer; background: transparent;">
+            <button class="btn btn-primary" onclick="setThemeColor()">Rengi Uygula</button>
+          </div>
+        </section>
 
-      <div style="background:rgba(170,136,255,0.08);border-radius:8px;padding:12px;border-left:3px solid #aa88ff;">
-        <h4 style="color:#aa88ff;margin:0 0 4px 0;font-size:0.9rem;">💎 Mekan Sahibi</h4>
-        <p style="color:#ccc;font-size:0.78rem;margin:0;line-height:1.5;">O güne kadar en çok toplam jeton değerinde hediye gönderen izleyiciyi devasa taç animasyonuyla ekranda sergiler. <b style="color:#00d4ff;">OBS: 1920×1080</b></p>
-      </div>
+        <!-- TEST BÖLÜMÜ -->
+        <section class="card" style="border: 2px dashed #33b5e5;">
+          <div class="panel-section">
+            <h3 class="section-title">🧪 Test İşlemleri</h3>
+            <p style="font-size: 0.85rem; color: #aaa; margin-bottom: 10px;">Sistemi denemek için sahte etkileşimler gönderir.</p>
+            <div style="display: flex; gap:10px; flex-wrap:wrap;">
+              <button class="btn btn-warning" onclick="sendTestData('vote')">Test Yorum</button>
+              <button class="btn btn-warning" onclick="sendTestData('leaderboard')">Test Oylama Sıralama</button>
+              <button class="btn btn-warning" onclick="sendTestData('follow')">Test Takipçi</button>
+              <button class="btn btn-warning" onclick="sendTestData('racon')">Test Racon</button>
+              <button class="btn btn-warning" onclick="sendTestData('like')">Test Beğeni</button>
+              <button class="btn btn-warning" onclick="sendTestData('alert')">Test Büyük Hediye</button>
+              <button class="btn btn-warning" onclick="sendTestData('topgifter')">Test Mekan Sahibi</button>
+              <button class="btn btn-warning" onclick="sendTestData('racon'); sendTestData('topgifter');">Test VIP Kombin</button> <button class="btn btn-warning" onclick="apiCall('/api/test/trigger', 'POST', { type: 'allstar', roomId: currentRoomId })">Test All-Star</button>
+            </div>
+          </div>
+        </section>
 
-      <div style="background:rgba(255,153,0,0.08);border-radius:8px;padding:12px;border-left:3px solid #ff9900;">
-        <h4 style="color:#ff9900;margin:0 0 4px 0;font-size:0.9rem;">🎩 Racon Kralı</h4>
-        <p style="color:#ccc;font-size:0.78rem;margin:0;line-height:1.5;">Mekan Sahibi'nden farklı olarak, yalnızca racon hediyesini en çok atan kişiyi adı ve puanıyla birlikte kral ilan eder. <b style="color:#00d4ff;">OBS: 1920×1080</b></p>
-      </div>
-
-      <div style="background:rgba(255,68,68,0.08);border-radius:8px;padding:12px;border-left:3px solid #ff4444;">
-        <h4 style="color:#ff4444;margin:0 0 4px 0;font-size:0.9rem;">🚨 Büyük Hediye Alarmı</h4>
-        <p style="color:#ccc;font-size:0.78rem;margin:0;line-height:1.5;">100 jeton ve üzeri hediye (Aslan, Evren vb.) atıldığında ekranda büyük 3D animasyon ve ses efektiyle patlar. Panelden açıp kapatabilirsiniz. <b style="color:#00d4ff;">OBS: 1920×1080</b></p>
-      </div>
-
-      <div style="background:rgba(0,212,255,0.08);border-radius:8px;padding:12px;border-left:3px solid #00d4ff;">
-        <h4 style="color:#00d4ff;margin:0 0 4px 0;font-size:0.9rem;">🎯 Günlük Hedef Barı</h4>
-        <p style="color:#ccc;font-size:0.78rem;margin:0;line-height:1.5;">"Motor İçin 50.000 Jeton" gibi özel hedefler belirleyin. Gelen her hediye jetona çevrilip ilerleme barı otomatik dolar. <b style="color:#00d4ff;">OBS: 800×120</b></p>
-      </div>
-
-      <div style="background:rgba(255,107,0,0.08);border-radius:8px;padding:12px;border-left:3px solid #ff6b00;">
-        <h4 style="color:#ff6b00;margin:0 0 4px 0;font-size:0.9rem;">⏱️ Yayın Süresi</h4>
-        <p style="color:#ccc;font-size:0.78rem;margin:0;line-height:1.5;">Panelden Başlat'a bastığınızda kırmızı CANLI noktası ve "02:15:30" formatında süre sayacı ekranda belirir. <b style="color:#00d4ff;">OBS: 400×80</b></p>
+        <section class="card" style="text-align:center;">
+          <button class="btn btn-danger" onclick="resetAll()">🗑 Her Şeyi Sıfırla (Verileri Sil)</button>
+        </section>
       </div>
 
     </div>
   </div>
 </div>
 
-<!-- SAĞ ALT: Rehberi Yeniden Aç Butonu -->
-<button id="guide-open-btn" onclick="openGuide()">📺 Overlay Rehberi</button>
+<!-- OVERLAY REHBER MODAL -->
+<div id="guide-modal-backdrop" class="hidden">
+  <div id="guide-modal">
+    <button id="guide-modal-close" onclick="closeGuide()" title="Kapat">✕</button>
+    <h2 style="color:#ffd700;margin:0 0 4px 0;font-size:1.3rem;text-align:center;">📺 Overlay Kullanım Rehberi</h2>
+    <p style="color:rgba(255,255,255,0.4);font-size:0.75rem;text-align:center;margin:0 0 20px 0;">OBS'ye eklemeden önce okuyun — Her overlay için doğru boyutu kullanın</p>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="background:rgba(0,212,255,0.08);border-radius:8px;padding:12px;border-left:3px solid #00d4ff;">
+        <h4 style="color:#00d4ff;margin:0 0 4px 0;font-size:0.9rem;">🎯 Oylama Overlay</h4>
+        <p style="color:#ccc;font-size:0.78rem;margin:0;line-height:1.5;">Gelen oylar işlenir. <b style="color:#00d4ff;">OBS: 1920×1080</b></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button id="guide-open-btn" onclick="openGuide()">📺 Rehber</button>
 
 <script>
-  function closeGuide() {
-    document.getElementById('guide-modal-backdrop').classList.add('hidden');
+  function closeGuide() { document.getElementById('guide-modal-backdrop').classList.add('hidden'); }
+  function openGuide() { document.getElementById('guide-modal-backdrop').classList.remove('hidden'); }
+  document.getElementById('guide-modal-backdrop').addEventListener('click', function(e) { if (e.target === this) closeGuide(); });
+
+  function switchTab(tabId) {
+    // Tüm tabları gizle
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    // Tüm butonlardan active sınıfını kaldır
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    // Tıklanan tabı göster
+    document.getElementById(tabId).classList.add('active');
+    // Tıklanan butonu aktif yap
+    event.currentTarget.classList.add('active');
   }
-  function openGuide() {
-    document.getElementById('guide-modal-backdrop').classList.remove('hidden');
-  }
-  // Backdrop'a tıklayınca kapat
-  document.getElementById('guide-modal-backdrop').addEventListener('click', function(e) {
-    if (e.target === this) closeGuide();
-  });
 </script>
+
+<script>
+    if (window.location.protocol === 'file:') {
+      alert("UYARI: Sayfayı klasörden çift tıklayarak açtınız! Sistem bu şekilde çalışamaz.");
+    }
+</script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="panel.js?v=5"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
