@@ -594,33 +594,46 @@ app.get('/api/get-avatar/:username', async (req, res) => {
     }
     username = username.replace('@', '');
     
+    // Method 1: Try via tiktok-connector (works if user is live)
     try {
         const { WebcastPushConnection } = require('tiktok-connector');
         let t = new WebcastPushConnection(username);
         const roomInfo = await t.getRoomInfo();
         if (roomInfo && roomInfo.owner && roomInfo.owner.avatar_large) {
-            
-              const urls = roomInfo.owner.avatar_large.url_list || [];
-              const jpegUrl = urls.find(u => u.includes(".jpeg") || u.includes(".jpg")) || urls[0];
-              return res.json({ success: true, avatar: jpegUrl, username: username });
-
+            const urls = roomInfo.owner.avatar_large.url_list || [];
+            const jpegUrl = urls.find(u => u.includes(".jpeg") || u.includes(".jpg")) || urls[0];
+            if (jpegUrl) return res.json({ success: true, avatar: jpegUrl, username: username });
         }
     } catch (err) {
-        // Fallback to scraping the public profile if the user is not live (offline)
-        try {
-            const axios = require('axios');
-            const profile = await axios.get(`https://www.tiktok.com/@${username}`, {
-                headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }
-            });
-            const match = profile.data.match(/"avatarLarger":"([^"]+)"/);
-            if (match) {
-                const avatarUrl = match[1].replace(/\\u002F/g, '/');
-                return res.json({ success: true, avatar: avatarUrl, username: username });
-            }
-        } catch (e) {
-            console.error('[API] /get-avatar scrape hatası:', e.message);
-        }
+        // User not live, fallback to Method 2
     }
+
+    // Method 2: Scrape TikTok profile page with mobile User-Agent (works offline)
+    try {
+        const axios = require('axios');
+        const profile = await axios.get(`https://www.tiktok.com/@${username}`, {
+            headers: { 
+                'User-Agent': 'TikTok 26.2.0 rv:262018 (iPhone; iOS 14.4.2; en_US) Cronet',
+                'Accept': 'text/html'
+            },
+            timeout: 10000
+        });
+        const html = profile.data;
+        const match = html.match(/"avatarLarger":"([^"]+)"/);
+        if (match) {
+            const avatarUrl = match[1].replace(/\\u002F/g, '/');
+            return res.json({ success: true, avatar: avatarUrl, username: username });
+        }
+        // Try medium avatar as fallback
+        const match2 = html.match(/"avatarMedium":"([^"]+)"/);
+        if (match2) {
+            const avatarUrl = match2[1].replace(/\\u002F/g, '/');
+            return res.json({ success: true, avatar: avatarUrl, username: username });
+        }
+    } catch (e) {
+        console.error('[API] /get-avatar scrape hatası:', e.message);
+    }
+
     res.json({ success: false });
 });
 
