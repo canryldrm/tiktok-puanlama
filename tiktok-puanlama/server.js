@@ -405,7 +405,17 @@ function connectToTikTok(roomId, username) {
     }
 
     cacheUser(room, data.uniqueId, data.nickname, data.profilePictureUrl);
-    const giftName = (data.giftName || '').toLowerCase();
+    
+    // YENİ: ID üzerinden Türkçe adını bul (İngilizce/Türkçe dil farkı sorununu kökten çözer!)
+    let rawGiftName = data.giftName || '';
+    if (typeof tikfinityGifts !== 'undefined' && Array.isArray(tikfinityGifts)) {
+        const tikfinityMatch = tikfinityGifts.find(g => g.id === data.giftId);
+        if (tikfinityMatch && tikfinityMatch.name) {
+            rawGiftName = tikfinityMatch.name;
+        }
+    }
+    const giftName = rawGiftName.toLowerCase();
+    
     const targetName = (state.raconGiftName || '').toLowerCase();
     
     const isComboEnd = data.repeatEnd === true;
