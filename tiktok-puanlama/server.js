@@ -574,7 +574,7 @@ function autoCaptureAvatar(roomId, uniqueId, profilePictureUrl) {
     const talker = uniqueId.toLowerCase().replace('@', '');
     let updated = false;
     room.state.allstar.players.forEach(p => {
-        if (p.name && p.name.toLowerCase().replace('@', '') === talker && (!p.photo || p.photo.includes('ui-avatars.com') || p.photo !== profilePictureUrl)) {
+        if (p.name && p.name.toLowerCase().replace('@', '') === talker && (!p.photo || p.photo.includes('ui-avatars.com'))) {
             p.photo = profilePictureUrl;
             updated = true;
         }
@@ -598,7 +598,11 @@ app.get('/api/get-avatar/:username', async (req, res) => {
         let t = new WebcastPushConnection(username);
         const roomInfo = await t.getRoomInfo();
         if (roomInfo && roomInfo.owner && roomInfo.owner.avatar_large) {
-            return res.json({ success: true, avatar: roomInfo.owner.avatar_large.url_list[0], username: username });
+            
+              const urls = roomInfo.owner.avatar_large.url_list || [];
+              const jpegUrl = urls.find(u => u.includes(".jpeg") || u.includes(".jpg")) || urls[0];
+              return res.json({ success: true, avatar: jpegUrl, username: username });
+
         }
         res.json({ success: false });
     } catch (err) {
