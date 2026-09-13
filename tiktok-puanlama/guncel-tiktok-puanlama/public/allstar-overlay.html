@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>All-Star Overlay</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: transparent; /* For OBS */
+      font-family: 'Poppins', sans-serif;
+      overflow: hidden;
+    }
+    
+    .allstar-container {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 50px;
+      box-sizing: border-box;
+    }
+
+    /* MATCH TIME BADGE */
+    .timer-badge {
+      background: #000;
+      border: 3px solid #ffde00;
+      border-radius: 20px;
+      padding: 5px 20px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(255, 222, 0, 0.4);
+      margin-bottom: 50px;
+      z-index: 10;
+    }
+    .timer-label {
+      color: #ffde00;
+      font-size: 16px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: -5px;
+    }
+    .timer-value {
+      color: #fff;
+      font-size: 24px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    /* PLAYERS GRID */
+    .players-grid {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      width: 90%;
+      max-width: 100%;
+      
+    }
+
+    /* PLAYER CARD */
+    .player-card {
+      flex: 1; min-width: 0;
+      max-width: 220px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.5s ease;
+    }
+    .player-card.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* PROGRESS BAR */
+    .progress-container {
+      width: 100%;
+      height: 18px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      margin-bottom: 20px;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      border-radius: 10px;
+      transition: width 0.3s ease;
+    }
+    /* Dynamic colors for bars based on index */
+    .player-card:nth-child(1) .progress-bar { background: #e2e8f0; box-shadow: 0 0 15px #e2e8f0; }
+    .player-card:nth-child(2) .progress-bar { background: #ffde00; box-shadow: 0 0 15px #ffde00; }
+    .player-card:nth-child(3) .progress-bar { background: #10b981; box-shadow: 0 0 15px #10b981; }
+    .player-card:nth-child(4) .progress-bar { background: #ef4444; box-shadow: 0 0 15px #ef4444; }
+
+    /* PHOTO CONTAINER */
+    .photo-frame {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border: 5px solid #ffde00;
+      border-radius: 30px;
+      position: relative;
+      padding: 5px;
+      box-sizing: border-box;
+      box-shadow: 0 0 30px rgba(255, 222, 0, 0.3);
+      margin-bottom: 20px;
+    }
+    .photo-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.6);
+      overflow: hidden;
+      position: relative;
+    }
+    .photo-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    /* VOTE NUMBER BADGE */
+    .vote-badge {
+      position: absolute;
+      bottom: -15px;
+      right: -15px;
+      background: #111;
+      color: #ffde00;
+      width: 35px;
+      height: 35px;
+      border-radius: 12px;
+      border: 3px solid #ffde00;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 900;
+      box-shadow: 0 0 15px rgba(255, 222, 0, 0.5);
+      z-index: 5;
+    }
+
+    /* INFO ROW (Name + Score) */
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 0 10px;
+      box-sizing: border-box;
+    }
+    .player-name {
+      color: #fff;
+      font-size: 16px;
+      font-weight: 800;
+      text-transform: uppercase;
+      text-shadow: 2px 2px 5px rgba(0,0,0,0.8);
+      flex: 1;
+      text-align: left;
+    }
+    .score-badge {
+      background: rgba(255,255,255,0.1);
+      border-radius: 30px;
+      padding: 5px 25px;
+      border: 2px solid rgba(255,255,255,0.3);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .score-value {
+      color: #fff;
+      font-size: 22px;
+      font-weight: 900;
+      text-shadow: 0 0 10px rgba(255,255,255,0.5);
+    }
+    .score-label {
+      color: #a1a1aa;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .player-card:nth-child(2) .score-value { color: #ffde00; text-shadow: 0 0 10px rgba(255, 222, 0, 0.5); }
+    .player-card:nth-child(2) .score-badge { border-color: rgba(255, 222, 0, 0.5); background: rgba(255, 222, 0, 0.1); }
+    .player-card:nth-child(3) .score-value { color: #10b981; text-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+    .player-card:nth-child(3) .score-badge { border-color: rgba(16, 185, 129, 0.5); background: rgba(16, 185, 129, 0.1); }
+    .player-card:nth-child(4) .score-value { color: #ef4444; text-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+    .player-card:nth-child(4) .score-badge { border-color: rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.1); }
+
+    @keyframes pulseLeader {
+      0% { transform: scale(1); box-shadow: 0 0 20px rgba(255,222,0,0.5); }
+      50% { transform: scale(1.05); box-shadow: 0 0 40px rgba(255,222,0,1); }
+      100% { transform: scale(1); box-shadow: 0 0 20px rgba(255,222,0,0.5); }
+    }
+    .is-leader .photo-frame {
+      animation: pulseLeader 1.5s infinite;
+      border-color: #ffde00;
+      z-index: 10;
+    }
+    
+    #winner-screen {
+      position: absolute;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.9);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      animation: fadeIn 1s forwards;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes winnerBounce {
+      0% { transform: scale(0.5); opacity: 0; }
+      60% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .winner-photo {
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      border: 10px solid #ffde00;
+      object-fit: cover;
+      box-shadow: 0 0 100px #ffde00;
+      animation: winnerBounce 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    .winner-text {
+      font-size: 50px;
+      font-weight: 900;
+      color: #fff;
+      text-transform: uppercase;
+      margin-top: 30px;
+      text-shadow: 0 0 20px #ffde00;
+      animation: fadeIn 1.5s forwards 0.5s;
+      opacity: 0;
+    }
+    .winner-sub {
+      font-size: 30px;
+      color: #ffde00;
+      margin-top: 10px;
+      animation: fadeIn 1.5s forwards 1s;
+      opacity: 0;
+    }
+  
+    .gift-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 6px 15px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      animation: pulseGift 2s infinite;
+    }
+    .gift-row img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+    }
+    .gift-row span {
+      color: #ffd700;
+      font-weight: bold;
+      font-size: 14px;
+      text-shadow: 1px 1px 2px #000;
+    }
+    @keyframes pulseGift {
+      0% { transform: scale(1); box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+      50% { transform: scale(1.05); box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3); }
+      100% { transform: scale(1); box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+    }
+
+</style>
+</head>
+<body>
+  <audio id="sound-winner" src="sounds/allstar-winner.mp3" preload="auto"></audio>
+  <audio id="sound-allstar-point" src="sounds/allstar-point.wav" preload="auto"></audio>
+
+  <div id="winner-screen">
+    <img id="winner-img" class="winner-photo" src="">
+    <div class="winner-text">MANYAK BİŞEYSİN!</div>
+    <div id="winner-score" class="winner-sub">0 PUAN</div>
+  </div>
+
+  <div class="allstar-container" id="main-container" style="display:none;">
+    <div class="timer-badge">
+      <div class="timer-label">MATCH TIME</div>
+      <div class="timer-value" id="timer-display">00:00</div>
+    </div>
+    
+    <div class="players-grid" id="players-grid">
+      <!-- Players injected via JS -->
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomId = urlParams.get('room');
+    if (!roomId) document.body.innerHTML = '<h1 style="color:white;text-align:center;">Hata: Room ID eksik!</h1>';
+
+    const socket = io();
+    socket.emit('joinRoom', roomId);
+
+    const mainContainer = document.getElementById('main-container');
+    const playersGrid = document.getElementById('players-grid');
+    const timerDisplay = document.getElementById('timer-display');
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function renderPlayers(players) {
+      const activePlayers = players.filter(p => p && p.name && p.name.trim() !== "");
+      if (activePlayers.length === 0) return;
+
+      const maxScore = Math.max(...activePlayers.map(p => p.score), 100);
+      const realMaxScore = Math.max(...activePlayers.map(p => p.score));
+
+      let html = "";
+      activePlayers.forEach((p, index) => {
+        const percent = Math.min((p.score / maxScore) * 100, 100);
+        const isLeader = (p.score === realMaxScore && realMaxScore > 0) ? "is-leader" : "";
+        html += `
+          <div class="player-card active ${isLeader}">
+            <div class="progress-container">
+              <div class="progress-bar" style="width: ${percent}%;"></div>
+            </div>
+            <div class="photo-frame">
+              <div class="photo-inner">
+                <img src="${(p.photo && p.photo !== 'Yükleniyor...') ? p.photo : 'https://ui-avatars.com/api/?name='+p.name+'&background=random'}" class="photo-img">
+              </div>
+              <div class="vote-badge">${p.id}</div>
+            </div>
+            <div class="info-row">
+              <div class="player-name">${p.name}</div>
+              <div class="score-badge">
+                <span class="score-value">${p.score}</span>
+                <span class="score-label">FPS</span>
+              </div>
+            </div>
+              ${p.giftPic ? `<div class="gift-row"><img src="${p.giftPic}" /><span>${p.gift}</span></div>` : ""}
+            </div>
+        `;
+      });
+      playersGrid.innerHTML = html;
+    }
+
+    let allstarFinished = false;
+    let lastScores = {};
+    
+    socket.on('allstarUpdate', (data) => {
+      if (!data) return;
+      
+      let scoreIncreased = false;
+      data.players.forEach(p => {
+          if (!p || !p.id) return;
+          if (lastScores[p.id] !== undefined && p.score > lastScores[p.id]) {
+              scoreIncreased = true;
+          }
+          lastScores[p.id] = p.score;
+      });
+
+      if (scoreIncreased) {
+          const pointSound = document.getElementById('sound-allstar-point');
+          if (pointSound) {
+              const clone = pointSound.cloneNode();
+              clone.volume = 0.5;
+              clone.play().catch(e => console.log(e));
+          }
+      }
+
+      const activePlayers = data.players.filter(p => p && p.name && p.name.trim() !== "");
+      const highestScore = activePlayers.length > 0 ? Math.max(...activePlayers.map(p => p.score)) : 0;
+      
+      const winnerScreen = document.getElementById('winner-screen');
+      const winnerImg = document.getElementById('winner-img');
+      const winnerScore = document.getElementById('winner-score');
+      const mainContainer = document.getElementById('main-container');
+
+      if (!data.isActive && highestScore > 0 && data.timer === 0) {
+        // Find winner
+        const winner = activePlayers.find(p => p.score === highestScore);
+        if (winner) {
+          if (!allstarFinished) {
+              allstarFinished = true;
+              const audioWinner = document.getElementById('sound-winner');
+              if (audioWinner) {
+                  audioWinner.volume = 0.7;
+                  audioWinner.play().catch(e => console.log(e));
+              }
+          }
+          mainContainer.style.display = 'none';
+          winnerScreen.style.display = 'flex';
+          winnerImg.src = winner.photo || 'https://ui-avatars.com/api/?name='+winner.name+'&background=random';
+          winnerScore.innerText = winner.score + ' PUAN';
+          return; // Skip normal render
+        }
+      }
+
+      // Normal render
+      allstarFinished = false;
+      winnerScreen.style.display = 'none';
+      mainContainer.style.display = 'flex';
+      const timerDisplay = document.querySelector('.timer-value');
+      timerDisplay.textContent = formatTime(data.timer);
+      renderPlayers(data.players);
+    });
+
+    // Play point animations
+    socket.on('playDrop', (data) => {
+       // We can trigger an animation if we want. For now, scores will just bump.
+    });
+
+  </script>
+</body>
+</html>

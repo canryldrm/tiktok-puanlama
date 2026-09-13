@@ -1,0 +1,55 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: transparent !important; overflow: hidden; font-family: 'Poppins', sans-serif; padding: 30px; }
+
+#win-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: fit-content;
+}
+
+.win-custom-text {
+    color: #fff;
+    font-size: 32px; /* Yazı büyütüldü */
+    font-weight: 900;
+    text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 3px 3px 6px rgba(0,0,0,0.8);
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+}
+
+.win-card {
+    display: flex;
+    align-items: center;
+    background: transparent;
+    border: none;
+    padding: 0;
+    box-shadow: none;
+    width: fit-content;
+}
+
+.win-icon {
+    font-size: 40px;
+    margin-right: 15px;
+    filter: drop-shadow(0 0 10px rgba(255,215,0,0.8));
+}
+
+.win-text {
+    color: var(--theme-color, #FFD700);
+    font-family: 'Russo One', sans-serif;
+    font-size: 32px;
+    margin-right: 20px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    letter-spacing: 2px;
+}
+
+.win-count {
+    background: transparent; /* Sarı alan kaldırıldı */
+    color: var(--theme-color, #FFD700); /* Renk paletine (theme-color) bağlandı */
+    font-size: 38px;
+    font-weight: 900;
+    padding: 0;
+    text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 3px 3px 6px rgba(0,0,0,0.8);
+}
+
+.hidden { display: none !important; }
+

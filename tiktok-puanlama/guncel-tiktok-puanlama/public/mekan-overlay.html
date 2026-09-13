@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mekan Sahibi Overlay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700;900&family=Russo+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="vip-overlay.css">
+</head>
+<body>
+    <div id="mekan-container" class="vip-container hidden">
+        <div id="mekan-card" class="vip-card">
+            <div class="vip-title">MEKAN SAHİBİ</div>
+            <img id="mekan-avatar" src="" alt="Avatar" class="vip-avatar">
+            <div id="mekan-username" class="vip-username">Bekleniyor</div>
+            <div id="mekan-text" class="vip-subtext hidden"></div>
+        </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="mekan-overlay.js"></script>
+</body>
+</html>

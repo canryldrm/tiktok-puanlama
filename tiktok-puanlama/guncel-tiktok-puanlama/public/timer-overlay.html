@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Yayın Süresi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700;900&family=Russo+One&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: transparent !important; overflow: hidden; font-family: 'Poppins', sans-serif; padding: 20px; }
+        .timer-container { display: inline-flex; align-items: center; gap: 15px; padding: 10px 25px; border-radius: 40px; border: 2px solid var(--theme-color, #FFD700); background: rgba(0,0,0,0.4); backdrop-filter: blur(5px); box-shadow: 0 0 15px rgba(0,0,0,0.5); }
+        .dot { width: 15px; height: 15px; background: red; border-radius: 50%; animation: pulse-red 1.5s infinite; box-shadow: 0 0 10px red; }
+        .text { color: white; font-size: 20px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; text-shadow: 1px 1px 3px black; }
+        .time { color: var(--theme-color, #FFD700); font-family: 'Russo One', sans-serif; font-size: 24px; text-shadow: 1px 1px 3px black; letter-spacing: 2px; }
+        @keyframes pulse-red { 0% { transform: scale(0.9); opacity: 0.7; box-shadow: 0 0 0 rgba(255,0,0,0.7); } 70% { transform: scale(1); opacity: 1; box-shadow: 0 0 15px rgba(255,0,0,0); } 100% { transform: scale(0.9); opacity: 0.7; box-shadow: 0 0 0 rgba(255,0,0,0); } }
+    </style>
+</head>
+<body>
+    <div class="timer-container">
+        <div class="dot"></div>
+        <div class="text">CANLI</div>
+        <div id="time-display" class="time">00:00:00</div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentRoomId = urlParams.get('room');
+        if (currentRoomId) socket.on('connect', () => socket.emit('joinRoom', currentRoomId));
+        
+        let timerState = { running: false, startTime: null, elapsed: 0 };
+        
+        socket.on('state:update', (data) => {
+            if (data.themeColor) document.documentElement.style.setProperty('--theme-color', data.themeColor);
+            if (data.timer) {
+                timerState = data.timer;
+                updateDisplay();
+            }
+        });
+        
+        function formatTime(ms) {
+            let totalSec = Math.floor(ms / 1000);
+            let h = Math.floor(totalSec / 3600);
+            let m = Math.floor((totalSec % 3600) / 60);
+            let s = totalSec % 60;
+            return (h < 10 ? '0'+h : h) + ':' + (m < 10 ? '0'+m : m) + ':' + (s < 10 ? '0'+s : s);
+        }
+        
+        function updateDisplay() {
+            let total = timerState.elapsed;
+            if (timerState.running && timerState.startTime) {
+                total += (Date.now() - timerState.startTime);
+            }
+            document.getElementById('time-display').textContent = formatTime(total);
+        }
+        
+        setInterval(updateDisplay, 1000);
+    </script>
+</body>
+</html>

@@ -16,21 +16,20 @@ html { background: transparent !important; }
 }
 
 .leaderboard-item {
-    background: rgba(0,0,0,0.8);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 15px 25px;
+    background: transparent;
+    border: none;
+    padding: 10px 15px;
     display: flex;
     align-items: center;
     gap: 20px;
     margin-bottom: 15px;
-    border-left: 8px solid #00ff88;
-    box-shadow: 0 0 20px rgba(0,255,136,0.2);
+    box-shadow: none;
+    position: relative;
     animation: slideInLeft 0.5s ease-out;
 }
 
 .rank-badge {
-    background: #00ff88;
+    background: linear-gradient(135deg, var(--theme-color, #FFD700), #FFA500);
     color: #000;
     font-family: 'Russo One', sans-serif;
     font-size: 26px;
@@ -52,7 +51,7 @@ html { background: transparent !important; }
 }
 
 .person-name {
-    color: white;
+    color: var(--theme-color, #FFD700);
     font-size: 28px;
     flex: 1;
     font-weight: 600;
@@ -63,7 +62,8 @@ html { background: transparent !important; }
 }
 
 .person-score {
-    color: #FFD700;
+    background: linear-gradient(135deg, var(--theme-color, #FFD700), #FFA500);
+    color: #000;
     font-size: 32px;
     font-family: 'Russo One', sans-serif;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.8);

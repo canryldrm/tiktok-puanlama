@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Büyük Hediye Alarmı</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700;900&family=Russo+One&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: transparent !important; overflow: hidden; font-family: 'Poppins', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .alert-container { text-align: center; opacity: 0; transform: scale(0.5); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .alert-container.show { opacity: 1; transform: scale(1); }
+        .alert-avatar { width: 150px; height: 150px; border-radius: 50%; border: 5px solid var(--theme-color, #FFD700); box-shadow: 0 0 50px var(--theme-color, #FFD700); object-fit: cover; animation: pulse 1s infinite alternate; }
+        .alert-text { margin-top: 20px; font-size: 50px; font-weight: 900; color: white; text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 10px 30px rgba(0,0,0,0.8); line-height: 1.2; text-transform: uppercase; }
+        .alert-highlight { color: var(--theme-color, #FFD700); font-family: 'Russo One', sans-serif; font-size: 60px; display: block; }
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); box-shadow: 0 0 80px var(--theme-color, #FFD700); } }
+    </style>
+</head>
+<body>
+    <div id="alert-container" class="alert-container">
+        <img id="alert-avatar" src="" class="alert-avatar">
+        <div class="alert-text">
+            <span id="alert-username">Ahmet</span>
+            <span id="alert-gift" class="alert-highlight">10x Aslan Gönderdi!</span>
+        </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentRoomId = urlParams.get('room');
+        if (currentRoomId) socket.on('connect', () => socket.emit('joinRoom', currentRoomId));
+        
+        let hideTimeout;
+        let lastAlertTimestamp = 0;
+        socket.on('state:update', (data) => {
+            if (data.themeColor) document.documentElement.style.setProperty('--theme-color', data.themeColor);
+            if (data.latestAlert) {
+                if (data.latestAlert.timestamp > lastAlertTimestamp) {
+                    lastAlertTimestamp = data.latestAlert.timestamp;
+                    document.getElementById('alert-username').textContent = data.latestAlert.username;
+                    document.getElementById('alert-gift').textContent = data.latestAlert.count + 'x ' + data.latestAlert.giftName + ' GÖNDERDİ!';
+                    document.getElementById('alert-avatar').src = data.latestAlert.profilePic || 'https://ui-avatars.com/api/?name=&background=random';
+                    
+                    const container = document.getElementById('alert-container');
+                    container.classList.remove('show');
+                    void container.offsetWidth; // trigger reflow
+                    container.classList.add('show');
+                    
+                    // TODO ses efekti eklenebilir
+                    
+                    clearTimeout(hideTimeout);
+                    hideTimeout = setTimeout(() => {
+                        container.classList.remove('show');
+                    }, 10000);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+
+

@@ -13,6 +13,8 @@ const leaderboardSection = document.getElementById('leaderboard-section');
 const leaderboardList = document.getElementById('leaderboard-list');
 
 socket.on('state:update', (data) => {
+    if (data.themeColor) document.documentElement.style.setProperty('--theme-color', data.themeColor);
+
     const history = data.history || [];
     
     if (history.length === 0) {
@@ -86,3 +88,4 @@ socket.on('state:update', (data) => {
         leaderboardList.appendChild(div);
     });
 });
+

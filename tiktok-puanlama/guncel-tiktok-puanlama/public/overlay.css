@@ -1,166 +1,189 @@
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: transparent !important; overflow: hidden; font-family: 'Poppins', sans-serif; }
-html { background: transparent !important; }
-
-#overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    width: 100vw; height: 100vh;
-    pointer-events: none;
-}
-
-
-/* MERKEZ (BÜYÜK PUAN) */
-#center-content {
-    position: absolute;
-    top: 45%; left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-}
-
-#score-display {
-    font-family: 'Russo One', sans-serif;
-    font-size: 50px; /* Yorum puanları 24px, bu da onlardan biraz büyük (50px) oldu */
-    text-align: center;
-    color: white;
-    transition: color 0.5s, text-shadow 0.5s;
-    /* SADE: Kalın bir siyah çerçeve (stroke) efekti ve hafif gölge eklendi */
-    text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 5px 15px rgba(0,0,0,0.8);
-    line-height: 1;
-}
-#score-display.pulse {
-    animation: pulse 0.6s ease-out;
-}
-
-#current-person {
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    padding: 10px 30px;
-    text-align: center;
-    color: #00d4ff;
-    font-family: 'Russo One', sans-serif;
-    font-size: 32px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    box-shadow: 0 0 20px rgba(0,212,255,0.3);
-}
-
-#voting-status {
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 12px 24px;
-    text-align: center;
-    color: white;
-    font-size: 18px;
-    border: 1px solid rgba(255,255,255,0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    font-weight: 600;
-}
-.status-dot { width: 14px; height: 14px; border-radius: 50%; background: #ff4444; }
-.status-dot.active { background: #00ff88; box-shadow: 0 0 12px #00ff88; }
-
-#countdown-container {
-    background: rgba(0,0,0,0.5);
-    border-radius: 10px;
-    height: 12px;
-    width: 350px;
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background: transparent; /* OBS için şeffaf */
     overflow: hidden;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
-}
-#countdown {
-    height: 100%;
-    background: linear-gradient(90deg, #00d4ff, #00ff88);
-    width: 100%;
-    transition: width 1s linear;
-    box-shadow: 0 0 15px rgba(0,212,255,0.8);
-}
-
-/* RACONLAR (KÖŞELERDE) */
-
-/* SOL TARAF: ALT ALTA YORUMLAR */
-#votes-list {
-    position: absolute;
-    top: 30px;
-    left: 10px;
-    width: 260px; /* Biraz genişlettik */
-    max-height: 80vh;
-    display: flex;
-    flex-direction: column;
-    gap: 10px; /* Boşluğu artırdık */
-    overflow: hidden;
-}
-
-.vote-item {
-    background: transparent;
-    border-radius: 30px;
-    padding: 0px 5px 0px 0px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    animation: slideInLeft 0.5s ease-out forwards;
-    white-space: nowrap;
-}
-
-.vote-avatar {
-    width: 45px; height: 45px; /* Avatarlar biraz büyüdü */
-    border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.4);
-    object-fit: cover;
-    background: linear-gradient(45deg, #333, #666);
-    flex-shrink: 0;
-}
-.vote-username { 
-    color: white; 
-    font-size: 18px; /* İsim büyüdü */
-    font-weight: 600; 
-    text-shadow: 2px 2px 4px #000; 
-    flex: 1; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-}
-.vote-score {
-    width: 35px; height: 35px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    font-weight: bold;
-    font-size: 24px; /* Rakam büyüdü */
+    font-family: 'Poppins', sans-serif;
     color: white;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-    font-family: 'Russo One', sans-serif;
-    flex-shrink: 0;
 }
-
-.racon-score {
-    background: #FFD700; color: #000; border-radius: 8px; padding: 4px 12px;
-    font-weight: bold; font-size: 20px;
-}
-.racon-coins { color: #00d4ff; font-size: 16px; font-weight: 700; margin-right: 10px; }
 
 .hidden { display: none !important; }
 
-/* ANİMASYONLAR */
-@keyframes slideInLeft {
-    from { transform: translateX(-100px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+#overlay {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 60px;
+    gap: 80px;
 }
-@keyframes scrollLeftMarquee {
-    0% { right: -400px; }
-    100% { right: 100vw; }
+
+/* --- ÜST MERKEZ BÖLÜM --- */
+#top-center {
+    position: relative;
+    text-align: center;
+    width: 400px;
+    order: 2;
 }
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.15); }
+
+#chat-status {
+    color: #ff4444;
+    font-weight: 800;
+    font-size: 1rem;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+    margin-bottom: 5px;
+    letter-spacing: 1px;
 }
-@keyframes crownBounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
+
+#vote-count {
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 800;
+    text-shadow: 2px 2px 0 #000;
+    position: absolute;
+    top: 50px;
+    left: 20px;
 }
+
+#score-display {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 3rem;
+    color: #ffd700;
+    text-shadow: 4px 4px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
+    margin: 5px 0;
+    line-height: 1;
+}
+
+#dynamic-message {
+    display: inline-block;
+    border: 2px solid rgba(255, 215, 0, 0.8);
+    background: rgba(0, 0, 0, 0.6);
+    padding: 5px 12px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.8rem;
+    color: #ffd700;
+    border-radius: 4px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    margin-bottom: 10px;
+}
+
+#instruction {
+    margin-top: 10px;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-shadow: 2px 2px 4px #000;
+    background: rgba(0,0,0,0.5);
+    padding: 4px 12px;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+/* --- SOL YIĞIN (SON 5 OY) --- */
+#votes-list {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 280px;
+    order: 1;
+    margin-top: 20px;
+}
+
+.vote-item {
+    background: rgba(10, 10, 10, 0.85);
+    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    padding: 6px;
+    animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    transform-origin: left center;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-50px) scale(0.9); }
+    to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+.vote-item.fade-out {
+    animation: slideOut 0.3s forwards;
+}
+
+@keyframes slideOut {
+    to { opacity: 0; transform: translateX(-50px); }
+}
+
+.vote-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    object-fit: cover;
+    border: 1px solid rgba(255,255,255,0.4);
+    margin-right: 12px;
+}
+
+.vote-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.vote-username {
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+    text-shadow: 1px 1px 2px #000;
+}
+
+.vote-score {
+    color: #00ff88;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    margin-top: 4px;
+    text-shadow: 1px 1px 0 #000;
+}
+
+/* --- GERİ SAYIM BAŞLANGIÇ EKRANI --- */
+#countdown-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.6);
+    z-index: 100;
+}
+
+#countdown-number {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 8rem;
+    color: #fff;
+    text-shadow: 0 0 30px #00d4ff, 5px 5px 0 #000;
+    animation: popIn 1s ease-in-out infinite;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    50% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 0; }
+}
+
+/* Puan güncelleme atması */
+.pulse-score {
+    animation: popScore 0.3s ease-out;
+}
+@keyframes popScore {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+
