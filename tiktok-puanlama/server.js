@@ -605,10 +605,23 @@ app.get('/api/get-avatar/:username', async (req, res) => {
               return res.json({ success: true, avatar: jpegUrl, username: username });
 
         }
-        res.json({ success: false });
     } catch (err) {
-        res.json({ success: false, error: err.message });
+        // Fallback to scraping the public profile if the user is not live (offline)
+        try {
+            const axios = require('axios');
+            const profile = await axios.get(`https://www.tiktok.com/@${username}`, {
+                headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }
+            });
+            const match = profile.data.match(/"avatarLarger":"([^"]+)"/);
+            if (match) {
+                const avatarUrl = match[1].replace(/\\u002F/g, '/');
+                return res.json({ success: true, avatar: avatarUrl, username: username });
+            }
+        } catch (e) {
+            console.error('[API] /get-avatar scrape hatası:', e.message);
+        }
     }
+    res.json({ success: false });
 });
 
 app.post('/api/connect', async (req, res) => {
